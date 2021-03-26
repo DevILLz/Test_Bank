@@ -1,0 +1,31 @@
+﻿<Window x:Class="Bank_13_.NewClient"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Bank_13_"
+        mc:Ignorable="d"
+        Title="Добавление нового клиента" Height="330" Width="280">
+    <Grid>
+        <!--Кнопка подтверждения действия-->
+        <Button Content="ОК" HorizontalAlignment="Left" Margin="180,270,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click" IsDefault="True"/>
+
+        <TextBlock HorizontalAlignment="Left" Margin="12,11,0,0" TextWrapping="Wrap" Text="Тип клиента" VerticalAlignment="Top" Width="243" FontWeight="Bold"/>
+        <ComboBox Name ="type" HorizontalAlignment="Left" Height="23" Margin="12,31,0,0" VerticalAlignment="Top" Width="243" SelectedIndex="0"/>
+
+        <TextBlock HorizontalAlignment="Left" Margin="12,61,0,0" TextWrapping="Wrap" Text="ФИО \ Название огранизации" VerticalAlignment="Top" Width="243" FontWeight="Bold"/>
+        <TextBox Name ="fullName" HorizontalAlignment="Left" Height="23" Margin="12,81,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="243"/>
+
+        <TextBlock Text="Адресс"  HorizontalAlignment="Left" Margin="12,111,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="243" FontWeight="Bold"/>
+        <TextBox Name ="address" HorizontalAlignment="Left" Height="23" Margin="12,131,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="243"/>
+
+        <TextBlock Text="Телефон" HorizontalAlignment="Left" Margin="12,163,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="243" FontWeight="Bold"/>
+        <TextBox Name ="pNuber" HorizontalAlignment="Left" Height="23" Margin="12,183,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="243"/>
+
+        <RadioButton Content="Надёжный?" Name="reliability" HorizontalAlignment="Left" Margin="12,236,0,0" VerticalAlignment="Top"/>
+        
+
+
+
+    </Grid>
+</Window>
