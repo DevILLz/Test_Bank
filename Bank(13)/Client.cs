@@ -3,20 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel;
 
 namespace Bank_13_
 {
-    public class Client
+    public class Client : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
         public Client()
         {
             FullName = "Олегов Олег Олегович";
             Address = "Ул. Пушкина 12";
-            PNuber = "+7999"+new Random().Next(1000000,9999999);
+            PNuber = "+7999" + new Random().Next(1000000, 9999999);
             Reliability = Convert.ToBoolean(new Random().Next(0, 1));
-            Money = new Random().Next(0, 9999999);
+            Money = new Random().Next(0, 9999);
             AIR = 10;
             id = ++StaticId;
+        }
+        public Client(long id)
+        {
+            StaticId = id;
         }
         public Client(string FullName, string Address, string PNuber, bool Reliability)
         {
@@ -54,18 +60,22 @@ namespace Bank_13_
                 moneySpent = 0;
             }
         }
-        /// <summary>
-        /// Создание нового Вклада (один на аккаунт)
-        /// </summary>
-        /// <param name="money"></param>
-        public void NewBankAccount(long money)
+        ///// <summary>
+        ///// Создание нового Вклада (один на аккаунт)
+        ///// </summary>
+        ///// <param name="money"></param>
+        //public void NewBankAccount(long money)
+        //{
+        //    if (this.Money >= money)
+        //    {
+        //        this.BankAccount = money;
+        //        this.Money -= money;
+        //    }
+        //    date = DateTime.Now;
+        //}
+        public void AddMoney(long money)
         {
-            if (this.Money >= money)
-            {
-                this.BankAccount = money;
-                this.Money -= money;
-            }
-            date = DateTime.Now;
+                this.Money += money;
         }
         public void UpdateBankAccount(long money)
         {
@@ -75,10 +85,15 @@ namespace Bank_13_
                 this.Money -= money;
             }
         }
-        public void Withdrawal(long money)
+        public long Withdrawal(long money)
         {
-            this.Money -= money;//иммитация покупки\снятия наличных
-            moneySpent += money;
+            if (this.Money >= money)
+            {
+                this.Money -= money;//иммитация покупки\снятия наличных
+                moneySpent += money;
+                return money;
+            }
+            return 0;
         }
         #region Автосвойства
         protected static long StaticId { get; set; }
@@ -91,27 +106,91 @@ namespace Bank_13_
         /// <summary>
         /// ФИО
         /// </summary>
-        public string FullName { get; set; }
+        public string FullName
+        {
+            get { return fullName; }
+            set
+            {
+                fullName = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.FullName)));
+            }
+        }
+        protected string fullName;
+
         /// <summary>
         /// Адрес
         /// </summary>
-        public string Address { get; set; }
+        public string Address
+        {
+            get { return address; }
+            set
+            {
+                address = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.Address)));
+            }
+        }
+        protected string address;
+
         /// <summary>
         /// Телефонный номер
         /// </summary>
-        public string PNuber { get; set; }
+        public string PNuber
+        {
+            get { return pNuber; }
+            set
+            {
+                pNuber = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.PNuber)));
+            }
+        }
+        protected string pNuber;
+
         /// <summary>
         /// Денежный счет
         /// </summary>
-        public long Money { get; set; }
+        public long Money
+        {
+            get { return money; }
+            private set
+            {
+                if (value >= 0)
+                    money = value;
+                else money = 0;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.Money)));
+            }
+        }
+        protected long money;
+
         /// <summary>
         /// Надёжность, если = true, вклад будет с капитализацией
         /// </summary>
-        public bool Reliability { get; protected set; }
+        public bool Reliability
+        {
+            get { return reliability; }
+            protected set
+            {
+                reliability = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.Reliability)));
+            }
+        }
+        protected bool reliability;
+
         /// <summary>
         /// Банковский счет (кол-во денег)
         /// </summary>
-        public long BankAccount { get; set; }
+        public long BankAccount
+        {
+            get { return bankAccount; }
+            set
+            {
+                if (value >= 0)
+                    bankAccount = value;
+                else bankAccount = 0;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.BankAccount)));
+            }
+        }
+        protected long bankAccount;
+
         /// <summary>
         /// AnnualInterestRate - годовая процентная ставка
         /// </summary>

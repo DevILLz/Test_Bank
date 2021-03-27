@@ -24,6 +24,7 @@ namespace Bank_13_
         {
             InitializeComponent();
             this.parent = parent;
+            ClientsList.ItemsSource = parent.db.ClientBase;
         }
     }
 }

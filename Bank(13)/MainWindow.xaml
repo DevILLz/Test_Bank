@@ -30,14 +30,11 @@
                 <MenuItem Header="Импорт данных в таблицу" Click="Import_button"/>
                 <!--Экспорт данных из таблицы в выбранное место-->
                 <MenuItem Header="Экспорт данных из таблицы" Click="Export_button"/>
+                <MenuItem Header="Создать новую БД" Click="NewDB_button"/>
             </MenuItem>
             <MenuItem Header="Добавить клиента" Click="Add_button"/>
             <MenuItem Header="Меню иммитации работы системы" Click="Immitation"/>
         </Menu>
-        <TextBox Name="depId" Grid.Column="1" HorizontalAlignment="Center" 
-                 Margin="0,60,0,0" Grid.Row="1" 
-                 TextWrapping="Wrap" 
-                 VerticalAlignment="Top" Width="180" Background="WhiteSmoke" BorderBrush="#FF969696">
-        </TextBox>
+        <ListBox x:Name="OperationList" Grid.Column="1" Grid.Row="1"/>
     </Grid>
 </Window>

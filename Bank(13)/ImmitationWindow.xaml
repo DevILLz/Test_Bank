@@ -7,6 +7,14 @@
         mc:Ignorable="d"
         Title="ImmitationWindow" Height="450" Width="800">
     <Grid>
-        
+        <DataGrid Name="ClientsList" SelectionMode="Extended" Grid.Column="0" ItemsSource="{Binding}" AutoGenerateColumns="False" Grid.Row="1" >
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" MaxWidth="35" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Имя" Binding="{Binding FullName}" Width="180"/>
+                <DataGridTextColumn Header="Адрес"  Binding="{Binding Address}" Width="150"/>
+                <DataGridTextColumn Header="Телефон"  Binding="{Binding PNuber}" MinWidth="100" MaxWidth="100" />
+                <DataGridTextColumn Header="Счет"  Binding="{Binding Money}" MinWidth="70" MaxWidth="70" IsReadOnly="True"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </Window>
