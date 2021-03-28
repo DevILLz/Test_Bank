@@ -11,10 +11,11 @@ namespace Bank_13_
             Address = "Ул. Октября 31";
             PNuber = "+7999" + new Random().Next(1000000, 9999999);
             Reliability = true;
-            BankAccount = new Random().Next(0, 9999999);
+            Money = new Random().Next(100, 999)*10;
+            BankAccount = new Random().Next(0, 999)*10;
             date = DateTime.Now;
             AIR = 13;
-            id = StaticId;
+            LR = 9;
         }
         public VIP(string FullName, string Address, string PNuber)
         {
@@ -23,8 +24,8 @@ namespace Bank_13_
             this.PNuber = PNuber;
             this.Reliability = true;
             this.BankAccount = 0;
-            AIR = 10;
-            id = StaticId;
+            AIR = 13;
+            LR = 9;
         }
 
     }

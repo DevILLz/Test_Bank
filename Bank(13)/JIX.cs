@@ -65,15 +65,17 @@ namespace Bank_13_
             {
                 e = JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings
                 {
-                    TypeNameHandling = TypeNameHandling.Auto
+                    TypeNameHandling = TypeNameHandling.All
                 });
             }
             catch
             {
-                switch (MessageBox.Show("Данная БД не совместима", "Error", MessageBoxButton.OKCancel))
+                switch (MessageBox.Show("Данная БД не совместима, желаете найти файл БД?", "Error", MessageBoxButton.YesNoCancel))
                 {
-                    case MessageBoxResult.OK:
+                    case MessageBoxResult.Yes:
                         Import("",ref e);
+                        break;
+                    case MessageBoxResult.No:
                         break;
                     case MessageBoxResult.Cancel:
                         Environment.Exit(0);

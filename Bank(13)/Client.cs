@@ -1,51 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.ComponentModel;
 
 namespace Bank_13_
 {
     public class Client : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler PropertyChanged;
-        public Client()
-        {
-            FullName = "Олегов Олег Олегович";
-            Address = "Ул. Пушкина 12";
-            PNuber = "+7999" + new Random().Next(1000000, 9999999);
-            Reliability = Convert.ToBoolean(new Random().Next(0, 1));
-            Money = new Random().Next(0, 9999);
-            AIR = 10;
-            id = ++StaticId;
-        }
-        public Client(long id)
-        {
-            StaticId = id;
-        }
-        public Client(string FullName, string Address, string PNuber, bool Reliability)
-        {
-            this.FullName = FullName;
-            this.Address = Address;
-            this.PNuber = PNuber;
-            this.Reliability = Reliability;
-            this.Money = 0;
-            AIR = 10;
-            id = ++StaticId;
-        }
+    {        
         /// <summary>
         /// Обновление данных счета
         /// </summary>
         /// <param name="current"></param>
+        public void AddMoney(long money)
+        {
+                this.Money += money;
+        }
+        /// <summary>
+        /// Ежемесячная проверка счёта
+        /// </summary>
+        /// <param name="current">Текущая дата</param>
         public void Update(DateTime current)//В реальной системе этот параметр не нужен
         {
             if (Reliability)
             {
                 if (date.AddMonths(1) <= current)
                 {
-                    BankAccount = (long)(BankAccount * AIR);
-                    Money = (long)(BankAccount * 1.01);
+                    BankAccount += (long)(BankAccount * (AIR/100/12));
+                    Money = (long)(Money * 1.01);//каддый месяц 1% от остатка
                     date = current;
                     this.Money += moneySpent;
                     moneySpent = 0;
@@ -54,29 +33,27 @@ namespace Bank_13_
             //Т.К. в теории оно происходит каждый день, нет смысла делать дополнительные проверки
             else if (date.AddYears(1) <= current)
             {
-                BankAccount = (long)(BankAccount * AIR);
+                BankAccount += (long)(BankAccount * AIR/100);
                 date = current;//время обновляется только если счет обновлён
                 this.Money += moneySpent;
                 moneySpent = 0;
             }
+            if (Credit > 0)
+            {
+                if (this.Money > Credit / 10)
+                {
+                    this.Money -= Credit / 10;//каждый месяц выплачивается 10% от остатка кредита
+                    if (count > 0) count--;
+                    else this.Reliability = true;//клиент становится надёжным, если не просрочил хотя бы один месяц
+                }  
+            }
+            else count++;
+            if (count == 5) this.Reliability = false;//если просрочил кредит 5 месяцев к ряду, надёжность пропадает
         }
-        ///// <summary>
-        ///// Создание нового Вклада (один на аккаунт)
-        ///// </summary>
-        ///// <param name="money"></param>
-        //public void NewBankAccount(long money)
-        //{
-        //    if (this.Money >= money)
-        //    {
-        //        this.BankAccount = money;
-        //        this.Money -= money;
-        //    }
-        //    date = DateTime.Now;
-        //}
-        public void AddMoney(long money)
-        {
-                this.Money += money;
-        }
+        /// <summary>
+        /// Добавить деньги на счет
+        /// </summary>
+        /// <param name="money">Сумма</param>
         public void UpdateBankAccount(long money)
         {
             if (this.Money >= money)
@@ -85,24 +62,103 @@ namespace Bank_13_
                 this.Money -= money;
             }
         }
+        /// <summary>
+        /// покупка
+        /// </summary>
+        /// <param name="money">Цена</param>
+        /// <returns></returns>
         public long Withdrawal(long money)
         {
             if (this.Money >= money)
             {
-                this.Money -= money;//иммитация покупки\снятия наличных
+                this.Money -= money;
                 moneySpent += money;
+                AM?.Invoke(this, money);
+                return money;
+            }
+            AM?.Invoke(this, 0);
+            return 0;
+        }
+        /// <summary>
+        /// Перевод\снятие наличных
+        /// </summary>
+        /// <param name="money">Цена</param>
+        /// <returns></returns>
+        public long Transfer(long money)
+        {
+            if (this.Money >= money)
+            {
+                this.Money -= money;//иммитация покупки\снятия наличных
                 return money;
             }
             return 0;
         }
+        /// <summary>
+        /// Новый кредит (последующие добавляются сверху)
+        /// </summary>
+        /// <param name="money">Сумма</param>
+        public void NewCredit(long money)//возможно, кредит станет отдельной сущностью
+        {
+            this.Money += money;
+            if (!reliability) this.Credit += money + (money * (LR / 100));
+            else this.Credit += money + (money * (LR / 125));//для надёжных клиентов, ставка по кредиту ниже
+        }
+
+
         #region Автосвойства
-        protected static long StaticId { get; set; }
+        public byte count;//все подобные поля публичные, что бы импорт нормально работал
+        public event PropertyChangedEventHandler PropertyChanged;
+        public event Action<object, long> AM;
+        /// <summary>
+        /// Создание клиента
+        /// </summary>
+        /// <param name="FullName">ФИО</param>
+        /// <param name="Address">Адресс</param>
+        /// <param name="PNuber">Телефонный номер</param>
+        /// <param name="Reliability">Надёжность</param>
+        public Client(string FullName, string Address, string PNuber, bool Reliability)
+        {
+            this.FullName = FullName;
+            this.Address = Address;
+            this.PNuber = PNuber;
+            this.Reliability = Reliability;
+            this.Money = 0;
+            LR = 15;
+            AIR = 10;
+            id = ++StaticId;
+        }
+        public Client(int i)
+        {
+            FullName = "Олегов Олег Олегович";
+            Address = "Ул. Пушкина 12";
+            PNuber = "+7999" + new Random().Next(1000000, 9999999);
+            Reliability = Convert.ToBoolean(new Random().Next(0, 1));
+            Money = new Random().Next(10, 99)*10;
+            AIR = 10;
+            LR = 15;
+            id = ++StaticId;
+        }
+        public Client(long id)
+        {
+            StaticId = id;
+        }
+        public Client()
+        {
+            id = ++StaticId;
+            count = 0;
+        }
         static Client()
         {
             StaticId = 0;
         }
+        protected static long StaticId { get; set; }
+        public long Id 
+        { 
+            get { return this.id; } 
+            set { id = value; }
+        }
         protected long id;
-        public long Id { get { return this.id; } }
+        public long Credit { get; set; }
         /// <summary>
         /// ФИО
         /// </summary>
@@ -151,10 +207,9 @@ namespace Bank_13_
         public long Money
         {
             get { return money; }
-            private set
+            set
             {
-                if (value >= 0)
-                    money = value;
+                if (value >= 0) money = value;
                 else money = 0;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.Money)));
             }
@@ -167,7 +222,7 @@ namespace Bank_13_
         public bool Reliability
         {
             get { return reliability; }
-            protected set
+            set
             {
                 reliability = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.Reliability)));
@@ -195,6 +250,11 @@ namespace Bank_13_
         /// AnnualInterestRate - годовая процентная ставка
         /// </summary>
         protected int AIR { get; set; }//в реальной системе должен быть flota\double
+        /// <summary>
+        /// Loan Rate - Ставка по кредиту
+        /// </summary>
+        protected int LR { get; set; }//в реальной системе должен быть flota\double
+
         protected DateTime date;
         protected long moneySpent;
         #endregion

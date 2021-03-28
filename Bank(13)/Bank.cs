@@ -13,40 +13,70 @@ namespace Bank_13_
     /// </summary>
     public class Bank
     {
-        DispatcherTimer timer;
+        
         Random r = new();
+        public string Name { get; private set; }
         public ObservableCollection<Log> OperationList = new();
+        public ObservableCollection<Client> ClientBase = new();
+        private DateTime Date = DateTime.Now;
         public Bank(string name)
         {
             this.Name = name;
-            ClientBase = new();
-            timer = new();
-            timer.Interval = new TimeSpan(0, 0, 0, 1);
-            timer.Tick += Imitation;
-            timer.Start();
         }
         public Bank()
         {
-            ClientBase = new();
-            this.Name = "Наш замечательный Банк";
-            timer = new();
-            timer.Interval = new TimeSpan(0, 0, 0, 1);
-            timer.Tick += Imitation;
-            timer.Start();
+            //this.Name = "Наш замечательный Банк";
         }
-        public event Action<object, long> MoneySpend;
-        private void Imitation(object sender, Log e)
+        public void Update(DateTime current)
+        {
+            foreach (var e in ClientBase)
+            {
+                e.Update(current);
+            }
+        }
+        public void Subscription()
+        {
+            foreach (var e in ClientBase)
+            {
+                e.AM += Log;
+            }
+        }
+        public void Transfer(int c1, int c2, long money)
+        {
+            long t = ClientBase[c1].Transfer(money);
+            if (t > 0)
+            {
+                ClientBase[c2].AddMoney(t);
+                OperationList.Add(new Log(ClientBase[c1].Id, ClientBase[c2].Id, t, true));
+            }
+            else OperationList.Add(new Log(ClientBase[c1].Id, ClientBase[c2].Id, money, false));
+        }
+        public void Imitation(object sender, EventArgs e)
         {
             if (ClientBase.Count > 0)
             {
-                long temp = r.Next(100, 1000);
-                long t = ClientBase[r.Next(0, ClientBase.Count() - 1)].Withdrawal(temp);
+                int c1 = r.Next(0, ClientBase.Count - 1);
                 Thread.Sleep(100);
+                int c2 = r.Next(0, ClientBase.Count - 1);
+                long tempM = r.Next(100, 1000);
+                long t = ClientBase[c1].Transfer(tempM);
                 if (t > 0)
-                    ClientBase[r.Next(0, ClientBase.Count() - 1)].AddMoney(t);
+                {
+                    ClientBase[c2].AddMoney(t);
+                    OperationList.Add(new Log(ClientBase[c1].Id, ClientBase[c2].Id, t, true));
+                }
+                else OperationList.Add(new Log(ClientBase[c1].Id, ClientBase[c2].Id, tempM, false));
             }
+            Date = Date.AddMonths(1);
+            Update(Date);
         }
-        
+        private void Log(object sender, long money)
+        {
+            bool f;
+            if (money > 0) f = true;
+            else f = false;
+            OperationList.Add(new Log((sender as Client).Id, default, money, f));
+        }
         public void AddClient(Client c)
         {
             ClientBase.Add(c);
@@ -84,19 +114,6 @@ namespace Bank_13_
                         Reliability));
                     break;
             }
-        }
-        public string Name { get; private set; }
-        public ObservableCollection<Client> ClientBase { get; private set; }
-
-        public bool Remittance(Client a, Client b, long money)
-        {
-            if (a.BankAccount >= money)
-            {
-                a.BankAccount -= money;
-                b.BankAccount += money;
-                return true;
-            }
-            else return false;
         }
     }
 }
