@@ -100,8 +100,8 @@ namespace Bank_13_
         public void NewCredit(long money)//возможно, кредит станет отдельной сущностью
         {
             this.Money += money;
-            if (!reliability) this.Credit += money + (money * (LR / 100));
-            else this.Credit += money + (money * (LR / 125));//для надёжных клиентов, ставка по кредиту ниже
+            if (!reliability) this.Credit += (long)(money + (money * ((float)LR / (float)100)));
+            else this.Credit += (long)(money + (money * (float)(LR / 125)));//для надёжных клиентов, ставка по кредиту ниже
         }
 
 
