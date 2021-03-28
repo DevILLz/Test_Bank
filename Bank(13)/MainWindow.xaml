@@ -15,6 +15,7 @@
             <ColumnDefinition MinWidth="350" Width="*"/>
             <ColumnDefinition Width="370"/>
         </Grid.ColumnDefinitions>
+        <!--Таблица вывода базы клиентов-->
         <DataGrid Name="ClientsList" SelectionMode="Extended" Grid.Column="0" ItemsSource="{Binding}" AutoGenerateColumns="False" Grid.Row="1" >
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding FullName}" Width="250"/>
@@ -29,7 +30,7 @@
                 </ContextMenu>
             </DataGrid.ContextMenu>
         </DataGrid>
-
+        <!--Высплывающее окно с информацией о клиенте-->
         <Popup x:Name="popupInfo" StaysOpen="False" Placement="Mouse" AllowsTransparency="True" PopupAnimation="Scroll" >
             <GroupBox Header="Информация" Background="White" FontWeight="Bold" FontSize="14" >
                 <GroupBox.BorderBrush>
@@ -72,7 +73,7 @@
                 </StackPanel>
             </GroupBox>
         </Popup>
-        
+        <!--Высплывающее окно с трансфером между клиентами-->
         <Popup x:Name="popupTransfer" StaysOpen="False" Placement="Mouse" AllowsTransparency="True" PopupAnimation="Scroll" >
             <GroupBox Header="Перевод" Background="White" FontWeight="Bold" FontSize="14" >
                 <GroupBox.BorderBrush>
@@ -111,7 +112,7 @@
                 </StackPanel>
             </GroupBox>
         </Popup>
-
+        <!--Высплывающее окно с выдачей кредита-->
         <Popup x:Name="CreditPU" StaysOpen="False" Placement="Mouse" AllowsTransparency="True" PopupAnimation="Scroll" >
             <GroupBox Header="Перевод" Background="White" FontWeight="Bold" FontSize="14" Margin="20" >
                 <GroupBox.BorderBrush>
@@ -128,7 +129,7 @@
                 </StackPanel>
             </GroupBox>
         </Popup>
-        
+        <!--Высплывающее окно с установкой новой даты системы (отладка)-->
         <Popup x:Name="NewDatePU" StaysOpen="False" Placement="Mouse" AllowsTransparency="True" PopupAnimation="Scroll" >
             <GroupBox Header="Перевод" Background="White" FontWeight="Bold" FontSize="14" >
                 <GroupBox.BorderBrush>
@@ -144,7 +145,7 @@
                 </StackPanel>
             </GroupBox>
         </Popup>
-
+        <!--Меню-->
         <Menu Grid.Row="0" Grid.ColumnSpan="3" >
             <MenuItem Header="File">
                 <!--Импорт данных в таблицу из выбранного места-->
@@ -160,7 +161,7 @@
             </MenuItem>
             <MenuItem Header="{Binding}" Name="TotalMoney"/>
         </Menu>
-
+        <!--Таблица вывода базы Логов-->
         <DataGrid Name="OperationList" SelectionMode="Extended" Grid.Column="1" Grid.Row="1" 
                   ItemsSource="{Binding}" AutoGenerateColumns="False" IsReadOnly="True"
                   Margin="10,0,0,0">
