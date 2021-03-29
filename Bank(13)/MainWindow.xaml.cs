@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
 using JsonImpExp;
@@ -158,8 +159,12 @@ namespace Bank_13_
         }//кнопка контекстного меню ClientList
         private void Creditt_button(object sender, RoutedEventArgs e)
         {
-            CreditPU.IsOpen = false;
-            db.ClientBase[ClientsList.SelectedIndex].NewCredit(Convert.ToInt64(Cmoney.Text));
+            if (Cmoney.Text != null && Cmoney.Text != "")
+            {
+                CreditPU.IsOpen = false;
+                db.ClientBase[ClientsList.SelectedIndex].NewCredit(Convert.ToInt64(Cmoney.Text));
+            }
+            
         }//кнопка ОК внутри popup выдачи кредитов
         private void NewDate_button(object sender, RoutedEventArgs e)
         {
@@ -196,6 +201,70 @@ namespace Bank_13_
         {
             e.Handled = !e.Text.All(IsGood);
         }//защита ввода (цифры)
+        private void OperationListInfo_click(object sender, RoutedEventArgs e)
+        {
+            popupLogInfo.IsOpen = true;
+            Client c1 = default, c2 = default;
+            foreach (var ee in db.ClientBase)
+                if (ee.Id == (OperationList.SelectedItem as Log).Sender) { c1 = ee; break; }
+            foreach (var ee in db.ClientBase)
+                if (ee.Id == (OperationList.SelectedItem as Log).Recipient) { c2 = ee; break; }
+            OperationSender.Text = $"{c1.Id}  {c1.FullName}";
+            OperationRecipient.Text = $"{c2.Id}  {c2.FullName}";
+        }
+        private void ClientInfo(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            popupInfo.IsOpen = true;
+            Client c1 = default;
+            foreach (var ee in db.ClientBase)
+                if (ee.Id == (OperationList.SelectedItem as Log).Sender) { c1 = ee; break; }
+            PUclientID.Text = $"{c1.Id}";
+            PUclientFullName.Text = $"{c1.FullName}";
+            PUclientAddress.Text = $"{c1.Address}";
+            PUclientPNuber.Text = $"{c1.PNuber}";
+            PUclientBankAccount.Text = $"{c1.BankAccount}";
+            PUclientReliability.Text = $"{c1.Reliability}";
+
+        }
+        private void ClientInfo1(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            popupInfo.IsOpen = true;
+            Client c2 = default;
+            foreach (var ee in db.ClientBase)
+                if (ee.Id == (OperationList.SelectedItem as Log).Recipient) { c2 = ee; break; }
+            PUclientID.Text = $"{c2.Id}";
+            PUclientFullName.Text = $"{c2.FullName}";
+            PUclientAddress.Text = $"{c2.Address}";
+            PUclientPNuber.Text = $"{c2.PNuber}";
+            PUclientBankAccount.Text = $"{c2.BankAccount}";
+            PUclientReliability.Text = $"{c2.Reliability}";
+
+        }
+        private void ClientInfo2(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            Thread.Sleep(400);
+            popupInfo.IsOpen = false;
+        }
+        private void PopupLogInfoExit(object sender, RoutedEventArgs e)
+        {
+            popupLogInfo.IsOpen = false;
+        }
+        private void CRepayment_button(object sender, RoutedEventArgs e)
+        {
+            db.ClientBase[ClientsList.SelectedIndex].Repayment();
+        }
+        private void BAUpdate_button(object sender, RoutedEventArgs e)
+        {
+            popupBAUpdate.IsOpen = true;
+        }
+        private void PUBAUpdate_button(object sender, RoutedEventArgs e)
+        {
+            if (BAUpdate.Text != null && BAUpdate.Text != "")
+            {
+                popupBAUpdate.IsOpen = false;
+                db.ClientBase[ClientsList.SelectedIndex].UpdateBankAccount(Convert.ToInt64(BAUpdate.Text), InOrOutBDUpdate.IsChecked.Value);
+            }
+        }
         #endregion
 
     }

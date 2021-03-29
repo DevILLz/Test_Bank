@@ -18,19 +18,21 @@
         <DataGrid Name="ClientsList" SelectionMode="Extended" Grid.Column="0" ItemsSource="{Binding}" AutoGenerateColumns="False" Grid.Row="1" >
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding FullName}" Width="250"/>
-                <DataGridTextColumn Header="Счет" Binding="{Binding Money}" MinWidth="70" MaxWidth="70" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Счет" Binding="{Binding Money}" MinWidth="70" Width="70" IsReadOnly="True"/>
             </DataGrid.Columns>
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Выдать кредит" Click="Credit_button"/>
+                    <MenuItem Header="Погасить кредит" Click="CRepayment_button"/>
                     <MenuItem Header="Сделать перевод" Click="Transfer_button"/>
+                    <MenuItem Header="Внести деньги на банковский счет" Click="BAUpdate_button"/>
                     <Separator/>
                     <MenuItem Header="Информация" Click="Info_button"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
         </DataGrid>
         <!--Высплывающее окно с информацией о клиенте-->
-        <Popup x:Name="popupInfo" StaysOpen="False" Placement="Mouse" AllowsTransparency="True" PopupAnimation="Scroll" >
+        <Popup x:Name="popupInfo" StaysOpen="False" Placement="MousePoint" AllowsTransparency="True" PopupAnimation="Scroll" >
             <GroupBox Header="Информация" Background="White" FontWeight="Bold" FontSize="14" >
                 <GroupBox.BorderBrush>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -41,33 +43,33 @@
                 </GroupBox.BorderBrush>
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="ID = "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.Id, ElementName=ClientsList}"/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="ID: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="PUclientID" Text="{Binding SelectedItem.Id, ElementName=ClientsList}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Имя = "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.FullName, ElementName=ClientsList}"/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Имя: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="PUclientFullName" Text="{Binding SelectedItem.FullName, ElementName=ClientsList}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Адресс = "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.Address, ElementName=ClientsList}"/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Адресс: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="PUclientAddress" Text="{Binding SelectedItem.Address, ElementName=ClientsList}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Номер = "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.PNuber, ElementName=ClientsList}"/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Номер: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="PUclientPNuber" Text="{Binding SelectedItem.PNuber, ElementName=ClientsList}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Банковский счет = "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.BankAccount, ElementName=ClientsList}"/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Банковский счет: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="PUclientBankAccount" Text="{Binding SelectedItem.BankAccount, ElementName=ClientsList}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Надёжность = "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.Reliability, ElementName=ClientsList}"/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Надёжность: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="PUclientReliability" Text="{Binding SelectedItem.Reliability, ElementName=ClientsList}"/>
                     </StackPanel>
                 </StackPanel>
             </GroupBox>
@@ -113,7 +115,7 @@
         </Popup>
         <!--Высплывающее окно с выдачей кредита-->
         <Popup x:Name="CreditPU" StaysOpen="False" Placement="Mouse" AllowsTransparency="True" PopupAnimation="Scroll" >
-            <GroupBox Header="Перевод" Background="White" FontWeight="Bold" FontSize="14" Margin="20" >
+            <GroupBox Header="Кредит" Background="White" FontWeight="Bold" FontSize="14" Margin="20" >
                 <GroupBox.BorderBrush>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Color="Black"/>
@@ -144,6 +146,65 @@
                 </StackPanel>
             </GroupBox>
         </Popup>
+        <!--Высплывающее окно с обновлением банковского счета-->
+        <Popup x:Name="popupBAUpdate" StaysOpen="False" Placement="Mouse" AllowsTransparency="True" PopupAnimation="Scroll" >
+            <GroupBox Header="Изменение счета" Background="White" FontWeight="Bold" FontSize="14" >
+                <GroupBox.BorderBrush>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black"/>
+                        <GradientStop Color="#FF350000" Offset="0.5"/>
+                        <GradientStop Color="#FF8B1313" Offset="1"/>
+                    </LinearGradientBrush>
+                </GroupBox.BorderBrush>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Имя: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.FullName, ElementName=ClientsList}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Банковский счет: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.BankAccount, ElementName=ClientsList}"/>
+                    </StackPanel>
+                    <CheckBox Name="InOrOutBDUpdate" Content="Снятие со счета"/>
+                    <TextBox Name="BAUpdate" DataObject.Pasting="OnPasting" PreviewTextInput="Tmoney_PreviewTextInput"/>
+                    <Button Content="ОК" Click="PUBAUpdate_button" IsDefault="True"/>
+                </StackPanel>
+            </GroupBox>
+        </Popup>
+        <!--Высплывающее окно с информацией о трансфере-->
+        <Popup x:Name="popupLogInfo" StaysOpen="False" Placement="MousePoint" AllowsTransparency="True" PopupAnimation="Scroll" >
+            <GroupBox Header="Информация" Background="White" FontWeight="Bold" FontSize="14" >
+                <GroupBox.BorderBrush>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black"/>
+                        <GradientStop Color="#FF350000" Offset="0.5"/>
+                        <GradientStop Color="#FF8B1313" Offset="1"/>
+                    </LinearGradientBrush>
+                </GroupBox.BorderBrush>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Дата: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.Date, ElementName=OperationList}"/>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Отправитель: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="OperationSender" MouseMove="ClientInfo" MouseLeave="ClientInfo2" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Получатель: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="OperationRecipient" MouseMove="ClientInfo1" MouseLeave="ClientInfo2" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Сумма: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.AmountOfMoney, ElementName=OperationList}" />
+                    </StackPanel>
+                    <Button Click="PopupLogInfoExit" Content="Ok" Height="20"/>
+                </StackPanel>
+            </GroupBox>
+        </Popup>
         <!--Меню-->
         <Menu Grid.Row="0" Grid.ColumnSpan="3" >
             <MenuItem Header="File">
@@ -165,12 +226,17 @@
                   ItemsSource="{Binding}" AutoGenerateColumns="False" IsReadOnly="True"
                   Margin="10,0,0,0">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Дата"  Binding="{Binding Date}" Width="130"/>
-                <DataGridTextColumn Header="Отп" Binding="{Binding Sender}" Width="40" />
-                <DataGridTextColumn Header="Пол" Binding="{Binding Recipient}" Width="40"/>
+                <DataGridTextColumn Header="Дата"  Binding="{Binding Date}" MinWidth="130"/>
+                <DataGridTextColumn Header="Отп" Binding="{Binding Sender}" MinWidth="40" />
+                <DataGridTextColumn Header="Пол" Binding="{Binding Recipient}" MinWidth="40"/>
                 <DataGridTextColumn Header="₽"  Binding="{Binding AmountOfMoney}" MinWidth="70" MaxWidth="70" />
                 <DataGridTextColumn Header="?"  Binding="{Binding Success}" MinWidth="70" MaxWidth="70" />
             </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Информация" Click="OperationListInfo_click"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
         </DataGrid>
     </Grid>
 </Window>

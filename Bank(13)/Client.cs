@@ -45,7 +45,8 @@ namespace Bank_13_
                     this.Money -= Credit / 10;//каждый месяц выплачивается 10% от остатка кредита
                     if (count > 0) count--;
                     else this.Reliability = true;//клиент становится надёжным, если не просрочил хотя бы один месяц
-                }  
+                }
+                if (Credit < 100 && money >= 100) this.Money -= Credit; //последние 100 Рублей снимаются сами, выходя из бесконечного цикла
             }
             else count++;
             if (count == 5) this.Reliability = false;//если просрочил кредит 5 месяцев к ряду, надёжность пропадает
@@ -54,12 +55,23 @@ namespace Bank_13_
         /// Добавить деньги на счет
         /// </summary>
         /// <param name="money">Сумма</param>
-        public void UpdateBankAccount(long money)
+        public void UpdateBankAccount(long money, bool outside)
         {
-            if (this.Money >= money)
+            if (outside)
             {
-                this.BankAccount += money;
-                this.Money -= money;
+                if (this.BankAccount >= money)
+                {
+                    this.Money += money;
+                    this.BankAccount -= money;
+                }
+            }
+            else
+            {
+                if (this.Money >= money)
+                {
+                    this.BankAccount += money;
+                    this.Money -= money;
+                }
             }
         }
         /// <summary>
@@ -102,6 +114,15 @@ namespace Bank_13_
             this.Money += money;
             if (!reliability) this.Credit += (long)(money + (money * ((float)LR / (float)100)));
             else this.Credit += (long)(money + (money * (float)(LR / 125)));//для надёжных клиентов, ставка по кредиту ниже
+        }
+        public void Repayment()
+        {
+            if (this.Credit > 0 && this.Money >= Credit)
+            {
+                this.Money -= Credit;
+                this.count = 0;
+                this.Reliability = true;
+            }
         }
 
 
