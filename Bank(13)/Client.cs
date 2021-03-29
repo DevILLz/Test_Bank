@@ -43,11 +43,12 @@ namespace Bank_13_
                 if (this.Money > Credit / 10)
                 {
                     this.Money -= Credit / 10;//каждый месяц выплачивается 10% от остатка кредита
+                    Credit -= Credit / 10;
                     if (count > 0) count--;
                     else this.Reliability = true;//клиент становится надёжным, если не просрочил хотя бы один месяц
                 }
-                if (Credit < 100 && money >= 100) this.Money -= Credit; //последние 100 Рублей снимаются сами, выходя из бесконечного цикла
-            }
+                if (Credit < 100 && money >= 100) { this.Money -= Credit; this.Credit = 0; } //последние 100 Рублей снимаются сами, выходя из бесконечного цикла
+                }
             else count++;
             if (count == 5) this.Reliability = false;//если просрочил кредит 5 месяцев к ряду, надёжность пропадает
         }
@@ -120,6 +121,7 @@ namespace Bank_13_
             if (this.Credit > 0 && this.Money >= Credit)
             {
                 this.Money -= Credit;
+                this.Credit = 0;
                 this.count = 0;
                 this.Reliability = true;
             }
@@ -179,7 +181,16 @@ namespace Bank_13_
             set { id = value; }
         }
         protected long id;
-        public long Credit { get; set; }
+        public long Credit
+        {
+            get { return credit; }
+            set
+            {
+                credit = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.Credit)));
+            }
+        }
+        protected long credit;
         /// <summary>
         /// ФИО
         /// </summary>

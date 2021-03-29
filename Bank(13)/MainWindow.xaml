@@ -71,6 +71,10 @@
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Надёжность: "/>
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="PUclientReliability" Text="{Binding SelectedItem.Reliability, ElementName=ClientsList}"/>
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Кредит: "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="PUclientCredit" Text="{Binding SelectedItem.Credit, ElementName=ClientsList}"/>
+                    </StackPanel>
                 </StackPanel>
             </GroupBox>
         </Popup>

@@ -224,6 +224,7 @@ namespace Bank_13_
             PUclientPNuber.Text = $"{c1.PNuber}";
             PUclientBankAccount.Text = $"{c1.BankAccount}";
             PUclientReliability.Text = $"{c1.Reliability}";
+            PUclientCredit.Text = $"{c1.Credit}";
 
         }
         private void ClientInfo1(object sender, System.Windows.Input.MouseEventArgs e)
@@ -238,6 +239,7 @@ namespace Bank_13_
             PUclientPNuber.Text = $"{c2.PNuber}";
             PUclientBankAccount.Text = $"{c2.BankAccount}";
             PUclientReliability.Text = $"{c2.Reliability}";
+            PUclientCredit.Text = $"{c2.Credit}";
 
         }
         private void ClientInfo2(object sender, System.Windows.Input.MouseEventArgs e)
