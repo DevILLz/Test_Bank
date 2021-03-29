@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace Bank_13_
 {
@@ -29,8 +30,7 @@ namespace Bank_13_
                     this.Money += moneySpent;
                     moneySpent = 0;
                 }
-            }
-            //Т.К. в теории оно происходит каждый день, нет смысла делать дополнительные проверки
+            }//Т.К. в теории оно происходит каждый день, нет смысла делать дополнительные проверки
             else if (date.AddYears(1) <= current)
             {
                 BankAccount += (long)(BankAccount * AIR/100);
@@ -309,5 +309,13 @@ namespace Bank_13_
             LR = 9;
         }
 
+    }
+
+    public static class EX
+    {
+        public static void AddIntoBank(this Client c, Bank db)
+        {
+            db.AddClient(c);
+        }
     }
 }

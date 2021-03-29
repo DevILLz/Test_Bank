@@ -17,6 +17,7 @@ namespace Bank_13_
         public MainWindow()
         {
             InitializeComponent();
+            
             Start();
 
         }
@@ -26,14 +27,14 @@ namespace Bank_13_
         private void Start()
         {
             db = new();
+            this.DataContext = db;
             MenuImmination.Header = "Включить иммитацию";
-            //CreateBank();
             Json.Import(defaultFileName, ref db);
-            db.Subscription();
-            cb2.ItemsSource = db.ClientBase;
+            db.Subscription();//автоподписка на изменение данных у каждого клиента
+            cb2.ItemsSource = db.ClientBase;// ?
             ClientsList.ItemsSource = db.ClientBase;
             OperationList.ItemsSource = db.OperationList;
-            
+            this.Title = db.Name;            
         }
         void CreateBank()
         {
@@ -44,13 +45,13 @@ namespace Bank_13_
                 switch (new Random().Next(3))
                 {
                     case 0:
-                        db.AddClient(new VIP());
+                        new VIP().AddIntoBank(db);
                         break;
                     case 1:
-                        db.AddClient(new Client(0));
+                        new Client(0).AddIntoBank(db);
                         break;
                     default:
-                        db.AddClient(new Entities());
+                        new Entities().AddIntoBank(db);
                         break;
                 }
             }

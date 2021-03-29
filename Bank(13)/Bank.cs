@@ -13,10 +13,15 @@ namespace Bank_13_
     /// </summary>
     public class Bank
     {
-        
         Random r = new();
-        public string Name { get; private set; }
+        public string Name { get; set; }
+        /// <summary>
+        /// Список операций
+        /// </summary>
         public ObservableCollection<Log> OperationList = new();
+        /// <summary>
+        /// Список клиентов
+        /// </summary>
         public ObservableCollection<Client> ClientBase = new();
         private DateTime Date = DateTime.Now;
         public Bank(string name)
@@ -27,6 +32,10 @@ namespace Bank_13_
         {
             //this.Name = "Наш замечательный Банк";
         }
+        /// <summary>
+        /// Обновление счета всех клиентов банка
+        /// </summary>
+        /// <param name="current">текущая дата</param>
         public void Update(DateTime current)
         {
             foreach (var e in ClientBase)
@@ -34,6 +43,9 @@ namespace Bank_13_
                 e.Update(current);
             }
         }
+        /// <summary>
+        /// Автоподписка на обновление данных всех клиентов
+        /// </summary>
         public void Subscription()
         {
             foreach (var e in ClientBase)
@@ -41,6 +53,12 @@ namespace Bank_13_
                 e.AM += Log;
             }
         }
+        /// <summary>
+        /// Перевод денег между счетами 2х клиентов
+        /// </summary>
+        /// <param name="c1">Клиент 1 (sender)</param>
+        /// <param name="c2">Клиент 2 (Recipient)</param>
+        /// <param name="money">Сумма</param>
         public void Transfer(int c1, int c2, long money)
         {
             long t = ClientBase[c1].Transfer(money);
@@ -51,6 +69,11 @@ namespace Bank_13_
             }
             else OperationList.Add(new Log(ClientBase[c1].Id, ClientBase[c2].Id, money, false));
         }
+        /// <summary>
+        /// Имитация работы системы
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void Imitation(object sender, EventArgs e)
         {
             if (ClientBase.Count > 0)
@@ -70,6 +93,11 @@ namespace Bank_13_
             Date = Date.AddMonths(1);
             Update(Date);
         }
+        /// <summary>
+        /// Логирование данных
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="money"></param>
         private void Log(object sender, long money)
         {
             bool f;
@@ -77,9 +105,14 @@ namespace Bank_13_
             else f = false;
             OperationList.Add(new Log((sender as Client).Id, default, money, f));
         }
+        /// <summary>
+        /// Добавление нового клиента банка
+        /// </summary>
+        /// <param name="c">Экземпляр класса Client</param>
         public void AddClient(Client c)
         {
             ClientBase.Add(c);
+            ClientBase[^1].AM += Log;
         }
         /// <summary>
         /// Добавление клиента в БД

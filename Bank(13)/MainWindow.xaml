@@ -3,9 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Bank_13_"
         mc:Ignorable="d"
-        Title="Банк" MinHeight="450" MinWidth="650" Width="720"  Closing="Window_Closing">
+        Title="{Binding}" MinHeight="450" MinWidth="650" Width="720"  Closing="Window_Closing">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
