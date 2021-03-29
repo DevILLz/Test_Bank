@@ -1,32 +1,28 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
-namespace Bank_13_
+namespace JsonImpExp
 {
-    /// <summary>
-    /// Json import & export
-    /// </summary>
-    class JIX
+    public static class Json
     {
-        public void Export<T>(T e)
+        public static void Export<T>(T e)
         {
-            Microsoft.Win32.SaveFileDialog dialog = new Microsoft.Win32.SaveFileDialog();
-            dialog.Filter = "Json files (*.json)|*.json|All files (*.*)|*.*";
-            dialog.FilterIndex = 0;
-            dialog.DefaultExt = "json";
-            Nullable<bool> result = dialog.ShowDialog();
+            SaveFileDialog dialog = new SaveFileDialog
+            {
+                Filter = "Json files (*.json)|*.json|All files (*.*)|*.*",
+                FilterIndex = 0,
+                DefaultExt = "json"
+            };
+            bool? result = dialog.ShowDialog();
             if (result == true)
             {
                 DefExport(dialog.FileName, e);
             }
         }
-        public void DefExport<T>(string fileName, T e)
+        public static void DefExport<T>(string fileName, T e)
         {
             string json = JsonConvert.SerializeObject(e, new JsonSerializerSettings
             {
@@ -42,7 +38,7 @@ namespace Bank_13_
         /// <param name="fileName">Место харения БД (Json)</param>
         /// <param name="e">БД</param>
         /// <returns></returns>
-        public void Import<T>(string fileName, ref T e)
+        public static void Import<T>(string fileName, ref T e)
         {
             string json = null;
             try
@@ -51,11 +47,13 @@ namespace Bank_13_
             }
             catch
             {
-                Microsoft.Win32.OpenFileDialog dialog = new();
-                dialog.Filter = "Json files (*.json)|*.json|All files (*.*)|*.*";
-                dialog.FilterIndex = 0;
-                dialog.DefaultExt = "json";
-                Nullable<bool> result = dialog.ShowDialog();
+                OpenFileDialog dialog = new OpenFileDialog
+                {
+                    Filter = "Json files (*.json)|*.json|All files (*.*)|*.*",
+                    FilterIndex = 0,
+                    DefaultExt = "json"
+                };
+                bool? result = dialog.ShowDialog();
                 if (result == true)
                 {
                     json = File.ReadAllText(dialog.FileName);
@@ -73,7 +71,7 @@ namespace Bank_13_
                 switch (MessageBox.Show("Данная БД не совместима, желаете найти файл БД?", "Error", MessageBoxButton.YesNoCancel))
                 {
                     case MessageBoxResult.Yes:
-                        Import("",ref e);
+                        Import("", ref e);
                         break;
                     case MessageBoxResult.No:
                         break;

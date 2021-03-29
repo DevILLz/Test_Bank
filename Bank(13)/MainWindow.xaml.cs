@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
+using JsonImpExp;
 
 namespace Bank_13_
 {
@@ -13,7 +14,6 @@ namespace Bank_13_
         bool flag1 = false;
         bool flag = false;
         public Bank db;
-        JIX jix;
         public MainWindow()
         {
             InitializeComponent();
@@ -26,10 +26,9 @@ namespace Bank_13_
         private void Start()
         {
             db = new();
-            jix = new JIX();
             MenuImmination.Header = "Включить иммитацию";
             //CreateBank();
-            new JIX().Import(defaultFileName, ref db);
+            Json.Import(defaultFileName, ref db);
             db.Subscription();
             cb2.ItemsSource = db.ClientBase;
             ClientsList.ItemsSource = db.ClientBase;
@@ -142,13 +141,13 @@ namespace Bank_13_
         private void Export_button(object sender, RoutedEventArgs e)
         {
 
-            jix.Export(db);
+            Json.Export(db);
 
         }//экспорт
         private void Import_button(object sender, RoutedEventArgs e)
         {
             new Client((long)0);
-            jix.Import("", ref db);
+            Json.Import("", ref db);
             ClientsList.ItemsSource = db.ClientBase;
             OperationList.ItemsSource = db.OperationList;
         }//импорт
@@ -190,7 +189,7 @@ namespace Bank_13_
         }//защита от копирования (цифры)
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            jix.DefExport(defaultFileName, db);
+            Json.DefExport(defaultFileName, db);
         }//экспорт при закрытии приложения
         private void Tmoney_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
         {
