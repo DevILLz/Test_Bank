@@ -4,15 +4,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="{Binding}" MinHeight="450" MinWidth="650" Width="720"  Closing="Window_Closing">
+        Title="" MinHeight="450" MinWidth="650" Width="770"  Closing="Window_Closing">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition MinWidth="350" Width="*"/>
-            <ColumnDefinition Width="370"/>
+            <ColumnDefinition MinWidth="390" Width="*"/>
         </Grid.ColumnDefinitions>
         <!--Таблица вывода базы клиентов-->
         <DataGrid Name="ClientsList" SelectionMode="Extended" Grid.Column="0" ItemsSource="{Binding}" AutoGenerateColumns="False" Grid.Row="1" >
@@ -87,7 +88,7 @@
                         <GradientStop Color="#FF350000" Offset="0.5"/>
                         <GradientStop Color="#FF8B1313" Offset="1"/>
                     </LinearGradientBrush>
-                </GroupBox.BorderBrush> 
+                </GroupBox.BorderBrush>
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Получатель:  "/>
@@ -190,7 +191,7 @@
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Дата: "/>
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.Date, ElementName=OperationList}"/>
                     </StackPanel>
-                    
+
                     <StackPanel Orientation="Horizontal">
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Отправитель: "/>
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="OperationSender" MouseMove="ClientInfo" MouseLeave="ClientInfo2" />
@@ -223,7 +224,7 @@
                 <MenuItem Name="MenuImmination" Header="{Binding}" Click="ImmitationOn"/>
                 <MenuItem Header="Задать текущую дату БД" Click="NewDate_button"/>
             </MenuItem>
-            <MenuItem Header="{Binding}" Name="TotalMoney"/>
+
         </Menu>
         <!--Таблица вывода базы Логов-->
         <DataGrid Name="OperationList" SelectionMode="Extended" Grid.Column="1" Grid.Row="1" 
@@ -242,5 +243,7 @@
                 </ContextMenu>
             </DataGrid.ContextMenu>
         </DataGrid>
+        <ProgressBar x:Name="PB" Height="18" Grid.Row="3" IsEnabled="True" Visibility="Visible"/>
+        <TextBlock x:Name="LoadInfo"  Grid.Column="2" HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="2" Text="Идет загрузка БД" Visibility ="Hidden" TextWrapping="Wrap" VerticalAlignment="Center"/>
     </Grid>
 </Window>

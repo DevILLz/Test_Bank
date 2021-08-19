@@ -8,6 +8,10 @@ namespace Bank_13_
 {
     public class Log
     {
+        public Log()
+        {
+
+        }
         public Log(long Sender, long Recipient, long AmountOfMoney, bool Successful)
         {
             this.Date = DateTime.Now;
@@ -15,6 +19,14 @@ namespace Bank_13_
             this.Recipient = Recipient;
             this.AmountOfMoney = AmountOfMoney;
             this.Successful = Successful;
+        }
+        public Log(DateTime date, long Sender, long Recipient, long AmountOfMoney, string Success)
+        {
+            this.Date = date;
+            this.Sender = Sender;
+            this.Recipient = Recipient;
+            this.AmountOfMoney = AmountOfMoney;
+            this.Success = Success;
         }
         public DateTime Date { get; set; }
         public long Sender { get; set; }

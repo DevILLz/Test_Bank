@@ -150,6 +150,20 @@ namespace Bank_13_
             AIR = 10;
             id = ++StaticId;
         }
+        public Client(string FullName, string Address, string PNuber, bool Reliability, long Money, byte count, long credit, long bankAccount)
+        {
+            this.FullName = FullName;
+            this.Address = Address;
+            this.PNuber = PNuber;
+            this.Reliability = Reliability;
+            this.Money = Money;
+            this.count = count;
+            this.credit = credit;
+            this.bankAccount = bankAccount;
+            LR = 15;
+            AIR = 10;
+            id = ++StaticId;
+        }
         public Client(int i)
         {
             FullName = "Олегов Олег Олегович";
@@ -285,7 +299,7 @@ namespace Bank_13_
         /// <summary>
         /// Loan Rate - Ставка по кредиту
         /// </summary>
-        protected int LR { get; set; }//в реальной системе должен быть flota\double
+        public int LR { get; set; }//в реальной системе должен быть flota\double
 
         protected DateTime date;
         protected long moneySpent;
@@ -315,6 +329,21 @@ namespace Bank_13_
             AIR = 15;
             LR = 5;
         }
+
+        public Entities(string FullName, string Address, string PNuber, bool Reliability, long Money, byte count, long credit, long bankAccount)
+        {
+            this.FullName = FullName;
+            this.Address = Address;
+            this.PNuber = PNuber;
+            this.Reliability = Reliability;
+            this.Money = Money;
+            this.count = count;
+            this.credit = credit;
+            this.bankAccount = bankAccount;
+            AIR = 15;
+            LR = 5;
+            id = ++StaticId;
+        }
     }
     public class VIP : Client
     {
@@ -339,6 +368,30 @@ namespace Bank_13_
             this.BankAccount = 0;
             AIR = 13;
             LR = 9;
+        }
+        public VIP(string FullName, string Address, string PNuber, long BankAccount)
+        {
+            this.FullName = FullName;
+            this.Address = Address;
+            this.PNuber = PNuber;
+            this.Reliability = true;
+            this.BankAccount = BankAccount;
+            AIR = 13;
+            LR = 9;
+        }
+        public VIP(string FullName, string Address, string PNuber, bool Reliability, long Money, byte count, long credit, long bankAccount)
+        {
+            this.FullName = FullName;
+            this.Address = Address;
+            this.PNuber = PNuber;
+            this.Reliability = Reliability;
+            this.Money = Money;
+            this.count = count;
+            this.credit = credit;
+            this.bankAccount = bankAccount;
+            AIR = 13;
+            LR = 9;
+            id = ++StaticId;
         }
 
     }

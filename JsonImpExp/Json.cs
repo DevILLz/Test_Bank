@@ -24,6 +24,7 @@ namespace JsonImpExp
         }
         public static void DefExport<T>(string fileName, T e)
         {
+
             string json = JsonConvert.SerializeObject(e, new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Auto
@@ -38,8 +39,9 @@ namespace JsonImpExp
         /// <param name="fileName">Место харения БД (Json)</param>
         /// <param name="e">БД</param>
         /// <returns></returns>
-        public static void Import<T>(string fileName, ref T e)
+        public static T Import<T>(string fileName)
         {
+            T db = default;
             string json = null;
             try
             {
@@ -59,19 +61,24 @@ namespace JsonImpExp
                     json = File.ReadAllText(dialog.FileName);
                 }
             }
+
             try
             {
-                e = JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings
-                {
-                    TypeNameHandling = TypeNameHandling.All
-                });
+                //db = JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings
+                //{
+                //    TypeNameHandling = TypeNameHandling.All
+                //});
+                
+
+
+
             }
             catch
             {
                 switch (MessageBox.Show("Данная БД не совместима, желаете найти файл БД?", "Error", MessageBoxButton.YesNoCancel))
                 {
                     case MessageBoxResult.Yes:
-                        Import("", ref e);
+                        Import<T> ("");
                         break;
                     case MessageBoxResult.No:
                         break;
@@ -80,6 +87,52 @@ namespace JsonImpExp
                         break;
                 }
             }
+
+
+            return db;
         }
+
+        //{
+        //    string json = null;
+        //    try
+        //    {
+        //        json = File.ReadAllText(fileName);
+        //    }
+        //    catch
+        //    {
+        //        OpenFileDialog dialog = new OpenFileDialog
+        //        {
+        //            Filter = "Json files (*.json)|*.json|All files (*.*)|*.*",
+        //            FilterIndex = 0,
+        //            DefaultExt = "json"
+        //        };
+        //        bool? result = dialog.ShowDialog();
+        //        if (result == true)
+        //        {
+        //            json = File.ReadAllText(dialog.FileName);
+        //        }
+        //    }
+        //    try
+        //    {
+        //        e = JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings
+        //        {
+        //            TypeNameHandling = TypeNameHandling.All
+        //        });
+        //    }
+        //    catch
+        //    {
+        //        switch (MessageBox.Show("Данная БД не совместима, желаете найти файл БД?", "Error", MessageBoxButton.YesNoCancel))
+        //        {
+        //            case MessageBoxResult.Yes:
+        //                Import("", ref e);
+        //                break;
+        //            case MessageBoxResult.No:
+        //                break;
+        //            case MessageBoxResult.Cancel:
+        //                Environment.Exit(0);
+        //                break;
+        //        }
+        //    }
+        //}
     }
 }

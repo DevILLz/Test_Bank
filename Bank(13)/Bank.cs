@@ -27,9 +27,14 @@ namespace Bank_13_
         public Bank(string name)
         {
             this.Name = name;
+            
         }
+        public int OLCount { get; set; }
+        public int ClCount { get; set; }
         public Bank()
         {
+            ClCount = 0;
+            OLCount = 0;
             //this.Name = "Наш замечательный Банк";
         }
         /// <summary>
@@ -93,6 +98,11 @@ namespace Bank_13_
             Date = Date.AddMonths(1);
             Update(Date);
         }
+        public void Update()
+        {
+            foreach (var e in ClientBase)
+            e.AM += Log;
+        }
         /// <summary>
         /// Логирование данных
         /// </summary>
@@ -111,8 +121,17 @@ namespace Bank_13_
         /// <param name="c">Экземпляр класса Client</param>
         public void AddClient(Client c)
         {
-            ClientBase.Add(c);
-            ClientBase[^1].AM += Log;
+            lock (ClientBase)
+            {
+            try
+                {
+                    ClientBase.Add(c);
+                }
+                catch
+                {
+
+                }  
+            }
         }
         /// <summary>
         /// Добавление клиента в БД

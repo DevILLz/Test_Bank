@@ -2,65 +2,159 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using JsonImpExp;
+//using JsonImpExp;
 
 namespace Bank_13_
 {
     public partial class MainWindow : Window
     {
-        readonly string defaultFileName = "BD.json";
+        readonly static string defaultFileName = "BD.json";
         DispatcherTimer timer;
         bool flag1 = false;
         bool flag = false;
-        public Bank db;
+        static public Bank db;
         public MainWindow()
         {
             InitializeComponent();
-            
-            Start();
-
+            new Thread(Start).Start();
         }
-        /// <summary>
-        /// просто стартовая функция
-        /// </summary>
         private void Start()
         {
             db = new();
-            this.DataContext = db;
+            this.Dispatcher.Invoke(() =>
+            {
             MenuImmination.Header = "Включить иммитацию";
-            Json.Import(defaultFileName, ref db);
-            db.Subscription();//автоподписка на изменение данных у каждого клиента
-            cb2.ItemsSource = db.ClientBase;// ?
-            ClientsList.ItemsSource = db.ClientBase;
-            OperationList.ItemsSource = db.OperationList;
-            this.Title = db.Name;            
+                LoadInfo.Visibility = Visibility.Visible;
+                PB.Visibility = Visibility.Visible;
+                PB.Value = 50;
+            });
+            Task.Factory.StartNew(() => Import(defaultFileName)).Wait(); 
+            
+            this.Dispatcher.Invoke(() =>
+            { 
+                LoadInfo.Visibility = Visibility.Hidden;
+                PB.Visibility = Visibility.Hidden;
+            });
+            //while (Json.db.ClientBase.Count < Json.count)
+            //{
+            //    Thread.Sleep(10);
+            //    this.Dispatcher.Invoke(() =>
+            //    {
+            //        PB.Visibility = Visibility.Visible;
+            //        PB.Value = Map(Json.db.ClientBase.Count, 0, Json.count, 0, 100);
+            //    });
+            //    //Debug.WriteLine($"{db.ClientBase.Count}");
+            //}
+
         }
         void CreateBank()
         {
+            this.Dispatcher.Invoke(() =>
+            { LoadInfo.Visibility = Visibility.Visible; });
             new Client((long)0); //сброс static ID
             db = new("Наш замечательный банк");
-            for (int i = 0; i < 30; i++)
+            int n = 6_000_00;
+            for (int i = 0; i < n; i++)
             {
-                switch (new Random().Next(3))
-                {
-                    case 0:
-                        new VIP().AddIntoBank(db);
-                        break;
-                    case 1:
-                        new Client(0).AddIntoBank(db);
-                        break;
-                    default:
-                        new Entities().AddIntoBank(db);
-                        break;
-                }
+                ThreadPool.QueueUserWorkItem(new WaitCallback(CBNW));
             }
-            ClientsList.ItemsSource = db.ClientBase;
+            while (db.ClientBase.Count < n)
+            {
+                Thread.Sleep(10);
+                this.Dispatcher.Invoke(() =>
+                {
+                    PB.Visibility = Visibility.Visible;
+                    PB.Value = Map(db.ClientBase.Count, 0, n, 0, 100);
+                });
+                //Debug.WriteLine($"{db.ClientBase.Count}");
+            }
+            this.Dispatcher.Invoke(() =>
+            {
+                ClientsList.ItemsSource = db.ClientBase;
+                OperationList.ItemsSource = db.OperationList;
+                PB.Visibility = Visibility.Hidden;
+            });
+            new Task(db.Update).Start();
+            this.Dispatcher.Invoke(() =>
+            { LoadInfo.Visibility = Visibility.Hidden; });
+
+        }
+        static private void CBNW(object o)
+        {
+
+            switch (new Random().Next(3))
+            {
+                case 0:
+                    new VIP().AddIntoBank(db);
+                    break;
+                case 1:
+                    new Client(0).AddIntoBank(db);
+                    break;
+                default:
+                    new Entities().AddIntoBank(db);
+                    break;
+            }
+
         }
         /// <summary>
         /// Запуск\останока иммитации работы системы (1 секунда = 1 месяц)
         /// </summary>
+        /// 
+        private void Import(object o)
+        {
+            db = Json.Import(o as string);
+
+            //Thread.Sleep(100);
+            //while (Json.db.ClientBase.Count < Json.count)
+            //{
+            //    Thread.Sleep(10);
+            //    this.Dispatcher.Invoke(() =>
+            //    {
+            //        PB.Visibility = Visibility.Visible;
+            //        PB.Value = Map(db.ClientBase.Count, 0, Json.count, 0, 100);
+            //        Debug.WriteLine($"{PB.Value}");
+            //    });
+            //}   
+            // Строка состояния
+            if (Json.count != 0 && db.ClientBase.Count == Json.count)
+                try
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        Title = db.Name;
+                        db.Subscription();//автоподписка на изменение данных у каждого клиента
+                        cb2.ItemsSource = db.ClientBase;// ?
+                        ClientsList.ItemsSource = db.ClientBase;
+                        OperationList.ItemsSource = db.OperationList;
+                        LoadInfo.Visibility = Visibility.Hidden;
+                        PB.Visibility = Visibility.Hidden;
+                    });
+                }
+                catch (Exception)
+                {
+                }
+        }
+        private void Export(object o)
+        {
+            db.OLCount = db.OperationList.Count;
+            db.ClCount = db.ClientBase.Count;
+            if (o as string == "exp")
+            {
+                Json.Export(db);
+                this.Dispatcher.Invoke(() =>
+                {
+                    LoadInfo.Visibility = Visibility.Hidden;
+                    PB.Visibility = Visibility.Hidden;
+                });
+            }
+
+            else Json.Export(defaultFileName, db);
+
+            
+        }
         public void StartOrStop()
         {
             if (!flag)
@@ -99,8 +193,12 @@ namespace Bank_13_
             {
                 m += ee.Money;
             }
-            TotalMoney.Header = m;
         }//Элемент меню - общая сумма денег в системе
+        private static double Map(int value, int fromLow, int fromHigh, int toLow, int toHigh)
+        {
+            return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
+        }
+
         private void Add_button(object sender, RoutedEventArgs e)
         {
             NewClient window = new NewClient(this);
@@ -119,9 +217,8 @@ namespace Bank_13_
         }//кнопка контекстного меню ClientList
         private void NewDB_button(object sender, RoutedEventArgs e)
         {
-            CreateBank();
-            ClientsList.ItemsSource = db.ClientBase;
-            OperationList.ItemsSource = db.OperationList;
+            new Thread(CreateBank).Start();
+            
         }//Создание новой БД
         private void ImmitationOn(object sender, RoutedEventArgs e)
         {
@@ -135,23 +232,39 @@ namespace Bank_13_
                 MenuImmination.Header = "Включить иммитацию";
                 flag1 = false;
             }
-            this.Dispatcher.Invoke(() =>
-            {
+
                 StartOrStop();
-            });
+
         }//включение имитации работы системы (1 секунда = 1 месяц)
         private void Export_button(object sender, RoutedEventArgs e)
         {
-
-            Json.Export(db);
-
+            LoadInfo.Text = "Идет экспорт БД";
+            LoadInfo.Visibility = Visibility.Visible;
+            PB.Visibility = Visibility.Visible;
+            PB.Value = 50;
+            new Thread(() => Export("exp")).Start();
         }//экспорт
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            LoadInfo.Text = "Идет экспорт БД";
+            LoadInfo.Visibility = Visibility.Visible;
+            Thread d = new Thread(() => Export(""));
+
+            d.Start();
+            d.IsBackground = false ;
+  
+
+        }//экспорт при закрытии приложения
         private void Import_button(object sender, RoutedEventArgs e)
         {
+
             new Client((long)0);
-            Json.Import("", ref db);
-            ClientsList.ItemsSource = db.ClientBase;
-            OperationList.ItemsSource = db.OperationList;
+            LoadInfo.Text = "Идет загрузка БД"; 
+            LoadInfo.Visibility = Visibility.Visible;
+            PB.Visibility = Visibility.Visible;
+            PB.Value = 50;
+            new Thread(() => Import("")).Start();
+
         }//импорт
         private void Credit_button(object sender, RoutedEventArgs e)
         {
@@ -164,7 +277,7 @@ namespace Bank_13_
                 CreditPU.IsOpen = false;
                 db.ClientBase[ClientsList.SelectedIndex].NewCredit(Convert.ToInt64(Cmoney.Text));
             }
-            
+
         }//кнопка ОК внутри popup выдачи кредитов
         private void NewDate_button(object sender, RoutedEventArgs e)
         {
@@ -193,10 +306,6 @@ namespace Bank_13_
                 e.CancelCommand();
             }
         }//защита от копирования (цифры)
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            Json.DefExport(defaultFileName, db);
-        }//экспорт при закрытии приложения
         private void Tmoney_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
         {
             e.Handled = !e.Text.All(IsGood);
