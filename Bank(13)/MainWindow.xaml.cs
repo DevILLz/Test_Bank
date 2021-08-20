@@ -19,7 +19,7 @@ namespace Bank_13_
         public MainWindow()
         {
             InitializeComponent();
-            new Thread(Start).Start();
+            Task.Factory.StartNew(Start);
         }
         private void Start()
         {
@@ -217,7 +217,7 @@ namespace Bank_13_
         }//кнопка контекстного меню ClientList
         private void NewDB_button(object sender, RoutedEventArgs e)
         {
-            new Thread(CreateBank).Start();
+            Task.Factory.StartNew(CreateBank);
             
         }//Создание новой БД
         private void ImmitationOn(object sender, RoutedEventArgs e)
@@ -242,16 +242,14 @@ namespace Bank_13_
             LoadInfo.Visibility = Visibility.Visible;
             PB.Visibility = Visibility.Visible;
             PB.Value = 50;
-            new Thread(() => Export("exp")).Start();
+            Task.Factory.StartNew(() => Export("exp"));
         }//экспорт
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             LoadInfo.Text = "Идет экспорт БД";
             LoadInfo.Visibility = Visibility.Visible;
-            Thread d = new Thread(() => Export(""));
+            Task.Factory.StartNew(() => Export(""));
 
-            d.Start();
-            d.IsBackground = false ;
   
 
         }//экспорт при закрытии приложения
@@ -263,7 +261,7 @@ namespace Bank_13_
             LoadInfo.Visibility = Visibility.Visible;
             PB.Visibility = Visibility.Visible;
             PB.Value = 50;
-            new Thread(() => Import("")).Start();
+            Task.Factory.StartNew(() => Import(""));
 
         }//импорт
         private void Credit_button(object sender, RoutedEventArgs e)
