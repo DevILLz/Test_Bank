@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bank(13)", "Bank(13)\Bank(13).csproj", "{6F9945C1-5AC1-47A1-932C-7754307317DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonImpExp", "JsonImpExp\JsonImpExp.csproj", "{75EFC7E6-E252-4392-AEA6-20875A85FF7E}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bank", "Bank", "{6B906F36-EA73-49CC-91C6-F9049B7B5947}"
 EndProject
 Global
@@ -19,17 +17,12 @@ Global
 		{6F9945C1-5AC1-47A1-932C-7754307317DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F9945C1-5AC1-47A1-932C-7754307317DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F9945C1-5AC1-47A1-932C-7754307317DE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{75EFC7E6-E252-4392-AEA6-20875A85FF7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{75EFC7E6-E252-4392-AEA6-20875A85FF7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{75EFC7E6-E252-4392-AEA6-20875A85FF7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{75EFC7E6-E252-4392-AEA6-20875A85FF7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6F9945C1-5AC1-47A1-932C-7754307317DE} = {6B906F36-EA73-49CC-91C6-F9049B7B5947}
-		{75EFC7E6-E252-4392-AEA6-20875A85FF7E} = {6B906F36-EA73-49CC-91C6-F9049B7B5947}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {69DA2438-2878-49D4-852C-ECE814BBE4F7}

@@ -5,13 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Bank_13_"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
         Title="Добавление нового клиента" Height="330" Width="280">
     <Grid>
         <!--Кнопка подтверждения действия-->
-        <Button Content="ОК" HorizontalAlignment="Left" Margin="180,270,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click" IsDefault="True"/>
+        <Button Content="ОК" HorizontalAlignment="Left" Margin="180,270,0,0" VerticalAlignment="Top" Width="75" Name="Button_Click" IsDefault="True"/>
 
         <TextBlock HorizontalAlignment="Left" Margin="12,11,0,0" TextWrapping="Wrap" Text="Тип клиента" VerticalAlignment="Top" Width="243" FontWeight="Bold"/>
-        <ComboBox Name ="type" HorizontalAlignment="Left" Height="23" Margin="12,31,0,0" VerticalAlignment="Top" Width="243" SelectedIndex="0"/>
+        <ComboBox Name ="type" HorizontalAlignment="Left" Height="23" Margin="12,31,0,0" VerticalAlignment="Top" Width="243" SelectedIndex="0">
+            <ComboBoxItem Content="Client"/>
+            <ComboBoxItem Content="VIP"/>
+            <ComboBoxItem Content="Entitie"/>
+        </ComboBox>
 
         <TextBlock HorizontalAlignment="Left" Margin="12,61,0,0" TextWrapping="Wrap" Text="ФИО \ Название огранизации" VerticalAlignment="Top" Width="243" FontWeight="Bold"/>
         <TextBox Name ="fullName" HorizontalAlignment="Left" Height="23" Margin="12,81,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="243"/>

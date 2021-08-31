@@ -1,21 +1,23 @@
 ﻿using System;
+using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
-//using JsonImpExp;
 
 namespace Bank_13_
 {
     public partial class MainWindow : Window
     {
-        readonly static string defaultFileName = "BD.json";
         DispatcherTimer timer;
-        bool flag1 = false;
         bool flag = false;
         static public Bank db;
+
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -31,10 +33,11 @@ namespace Bank_13_
                 PB.Visibility = Visibility.Visible;
                 PB.Value = 50;
             });
-            Task.Factory.StartNew(() => Import(defaultFileName)).Wait(); 
             
             this.Dispatcher.Invoke(() =>
             { 
+                ClientsList.DataContext = db.dt.DefaultView;
+                OperationList.DataContext = db.dtl.DefaultView;
                 LoadInfo.Visibility = Visibility.Hidden;
                 PB.Visibility = Visibility.Hidden;
             });
@@ -50,111 +53,9 @@ namespace Bank_13_
             //}
 
         }
-        void CreateBank()
-        {
-            this.Dispatcher.Invoke(() =>
-            { LoadInfo.Visibility = Visibility.Visible; });
-            new Client((long)0); //сброс static ID
-            db = new("Наш замечательный банк");
-            int n = 6_000_00;
-            for (int i = 0; i < n; i++)
-            {
-                ThreadPool.QueueUserWorkItem(new WaitCallback(CBNW));
-            }
-            while (db.ClientBase.Count < n)
-            {
-                Thread.Sleep(10);
-                this.Dispatcher.Invoke(() =>
-                {
-                    PB.Visibility = Visibility.Visible;
-                    PB.Value = Map(db.ClientBase.Count, 0, n, 0, 100);
-                });
-                //Debug.WriteLine($"{db.ClientBase.Count}");
-            }
-            this.Dispatcher.Invoke(() =>
-            {
-                ClientsList.ItemsSource = db.ClientBase;
-                OperationList.ItemsSource = db.OperationList;
-                PB.Visibility = Visibility.Hidden;
-            });
-            new Task(db.Update).Start();
-            this.Dispatcher.Invoke(() =>
-            { LoadInfo.Visibility = Visibility.Hidden; });
+        
+        
 
-        }
-        static private void CBNW(object o)
-        {
-
-            switch (new Random().Next(3))
-            {
-                case 0:
-                    new VIP().AddIntoBank(db);
-                    break;
-                case 1:
-                    new Client(0).AddIntoBank(db);
-                    break;
-                default:
-                    new Entities().AddIntoBank(db);
-                    break;
-            }
-
-        }
-        /// <summary>
-        /// Запуск\останока иммитации работы системы (1 секунда = 1 месяц)
-        /// </summary>
-        /// 
-        private void Import(object o)
-        {
-            db = Json.Import(o as string);
-
-            //Thread.Sleep(100);
-            //while (Json.db.ClientBase.Count < Json.count)
-            //{
-            //    Thread.Sleep(10);
-            //    this.Dispatcher.Invoke(() =>
-            //    {
-            //        PB.Visibility = Visibility.Visible;
-            //        PB.Value = Map(db.ClientBase.Count, 0, Json.count, 0, 100);
-            //        Debug.WriteLine($"{PB.Value}");
-            //    });
-            //}   
-            // Строка состояния
-            if (Json.count != 0 && db.ClientBase.Count == Json.count)
-                try
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        Title = db.Name;
-                        db.Subscription();//автоподписка на изменение данных у каждого клиента
-                        cb2.ItemsSource = db.ClientBase;// ?
-                        ClientsList.ItemsSource = db.ClientBase;
-                        OperationList.ItemsSource = db.OperationList;
-                        LoadInfo.Visibility = Visibility.Hidden;
-                        PB.Visibility = Visibility.Hidden;
-                    });
-                }
-                catch (Exception)
-                {
-                }
-        }
-        private void Export(object o)
-        {
-            db.OLCount = db.OperationList.Count;
-            db.ClCount = db.ClientBase.Count;
-            if (o as string == "exp")
-            {
-                Json.Export(db);
-                this.Dispatcher.Invoke(() =>
-                {
-                    LoadInfo.Visibility = Visibility.Hidden;
-                    PB.Visibility = Visibility.Hidden;
-                });
-            }
-
-            else Json.Export(defaultFileName, db);
-
-            
-        }
         public void StartOrStop()
         {
             if (!flag)
@@ -162,7 +63,6 @@ namespace Bank_13_
                 timer = new();
                 timer.Interval = new TimeSpan(0, 0, 0, 1);
                 timer.Tick += db.Imitation;
-                timer.Tick += TAmountOfMoney;
                 timer.Start();
                 flag = true;
             }
@@ -186,30 +86,24 @@ namespace Bank_13_
         }
 
         #region Кнопочки
-        void TAmountOfMoney(object sender, EventArgs e)
-        {
-            long m = 0;
-            foreach (var ee in db.ClientBase)
-            {
-                m += ee.Money;
-            }
-        }//Элемент меню - общая сумма денег в системе
         private static double Map(int value, int fromLow, int fromHigh, int toLow, int toHigh)
         {
             return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
         }
-
         private void Add_button(object sender, RoutedEventArgs e)
         {
-            NewClient window = new NewClient(this);
-            window.Owner = this;
-            window.Show();
+
+            DataRow r = db.dt.NewRow();
+            NewClient window = new NewClient(r);
+            window.ShowDialog();
+
+
+            if (window.DialogResult.Value)
+            {
+                db.dt.Rows.Add(r);
+                db.da.Update(db.dt);
+            }
         }//добавление нового клиента
-        private void DateOK_b(object sender, RoutedEventArgs e)//кнопка ОК внутри popup задания текущей даты
-        {
-            NewDatePU.IsOpen = false;
-            if (DatePU.SelectedDate != null) db.Update(DatePU.SelectedDate.Value);
-        }
         private void Info_button(object sender, RoutedEventArgs e)
         {
             popupInfo.IsOpen = true;
@@ -217,53 +111,20 @@ namespace Bank_13_
         }//кнопка контекстного меню ClientList
         private void NewDB_button(object sender, RoutedEventArgs e)
         {
-            Task.Factory.StartNew(CreateBank);
+            Task.Factory.StartNew(() => db.CreateBank(this));
             
         }//Создание новой БД
         private void ImmitationOn(object sender, RoutedEventArgs e)
         {
-            if (!flag1)
-            {
-                MenuImmination.Header = "Выключить иммитацию";
-                flag1 = true;
-            }
-            else
-            {
-                MenuImmination.Header = "Включить иммитацию";
-                flag1 = false;
-            }
-
-                StartOrStop();
-
+            if (!flag) { MenuImmination.Header = "Выключить иммитацию"; }
+            else { MenuImmination.Header = "Включить иммитацию"; }
+            StartOrStop();
         }//включение имитации работы системы (1 секунда = 1 месяц)
-        private void Export_button(object sender, RoutedEventArgs e)
-        {
-            LoadInfo.Text = "Идет экспорт БД";
-            LoadInfo.Visibility = Visibility.Visible;
-            PB.Visibility = Visibility.Visible;
-            PB.Value = 50;
-            Task.Factory.StartNew(() => Export("exp"));
-        }//экспорт
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            LoadInfo.Text = "Идет экспорт БД";
-            LoadInfo.Visibility = Visibility.Visible;
-            Task.Factory.StartNew(() => Export(""));
+            
 
-  
-
-        }//экспорт при закрытии приложения
-        private void Import_button(object sender, RoutedEventArgs e)
-        {
-
-            new Client((long)0);
-            LoadInfo.Text = "Идет загрузка БД"; 
-            LoadInfo.Visibility = Visibility.Visible;
-            PB.Visibility = Visibility.Visible;
-            PB.Value = 50;
-            Task.Factory.StartNew(() => Import(""));
-
-        }//импорт
+        }
         private void Credit_button(object sender, RoutedEventArgs e)
         {
             CreditPU.IsOpen = true;
@@ -273,17 +134,35 @@ namespace Bank_13_
             if (Cmoney.Text != null && Cmoney.Text != "")
             {
                 CreditPU.IsOpen = false;
-                db.ClientBase[ClientsList.SelectedIndex].NewCredit(Convert.ToInt64(Cmoney.Text));
+                db.con.Open();
+                new SqlCommand(
+                    $@"UPDATE Clients SET Credit = {Convert.ToInt64(Cmoney.Text)} 
+                    WHERE Id = {(ClientsList.SelectedItem as DataRowView).Row.ItemArray[0]}", db.con).ExecuteNonQuery();
+                db.con.Close();
             }
-
         }//кнопка ОК внутри popup выдачи кредитов
-        private void NewDate_button(object sender, RoutedEventArgs e)
+
+
+        void ds(object sender, RoutedEventArgs e)
         {
-            NewDatePU.IsOpen = true;
-        }//кнопка меню "Задать текущую дату БД"
+            try
+            {
+                Tname.Text = db.dt.Rows[Convert.ToInt32(Tidrec.Text)-1].ItemArray[2].ToString();
+                Tadress.Text = db.dt.Rows[Convert.ToInt32(Tidrec.Text)-1].ItemArray[4].ToString();
+                Tpnumber.Text = db.dt.Rows[Convert.ToInt32(Tidrec.Text)-1].ItemArray[8].ToString();
+
+            }
+            catch
+            {
+                Tname.Text = "";
+                Tadress.Text = "";
+                Tpnumber.Text = "";
+            }
+        }
         private void Transfer_button(object sender, RoutedEventArgs e)
         {
             popupTransfer.IsOpen = true;
+            Tidrec.TextChanged += ds;
         }//кнопка контекстного меню ClientList
         private void Transfer1_button(object sender, RoutedEventArgs e)
         {
@@ -291,9 +170,9 @@ namespace Bank_13_
             {
                 popupTransfer.IsOpen = false;
                 db.Transfer(
-                    ClientsList.SelectedIndex,
-                    cb2.SelectedIndex,
-                    Convert.ToInt64(Tmoney.Text));
+                    (int)db.dt.Rows[ClientsList.SelectedIndex].ItemArray[0],
+                    Convert.ToInt32(Tidrec.Text),
+                    Convert.ToInt32(Tmoney.Text));
             }
         }//кнопка ОК внутри popup трансферов
         private void OnPasting(object sender, DataObjectPastingEventArgs e)
@@ -310,43 +189,43 @@ namespace Bank_13_
         }//защита ввода (цифры)
         private void OperationListInfo_click(object sender, RoutedEventArgs e)
         {
-            popupLogInfo.IsOpen = true;
-            Client c1 = default, c2 = default;
-            foreach (var ee in db.ClientBase)
-                if (ee.Id == (OperationList.SelectedItem as Log).Sender) { c1 = ee; break; }
-            foreach (var ee in db.ClientBase)
-                if (ee.Id == (OperationList.SelectedItem as Log).Recipient) { c2 = ee; break; }
-            OperationSender.Text = $"{c1.Id}  {c1.FullName}";
-            OperationRecipient.Text = $"{c2.Id}  {c2.FullName}";
+            //popupLogInfo.IsOpen = true;
+            //Client c1 = default, c2 = default;
+            //foreach (var ee in db.ClientBase)
+            //    if (ee.Id == (OperationList.SelectedItem as Log).Sender) { c1 = ee; break; }
+            //foreach (var ee in db.ClientBase)
+            //    if (ee.Id == (OperationList.SelectedItem as Log).Recipient) { c2 = ee; break; }
+            //OperationSender.Text = $"{c1.Id}  {c1.FullName}";
+            //OperationRecipient.Text = $"{c2.Id}  {c2.FullName}";
         }
         private void ClientInfo(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            popupInfo.IsOpen = true;
-            Client c1 = default;
-            foreach (var ee in db.ClientBase)
-                if (ee.Id == (OperationList.SelectedItem as Log).Sender) { c1 = ee; break; }
-            PUclientID.Text = $"{c1.Id}";
-            PUclientFullName.Text = $"{c1.FullName}";
-            PUclientAddress.Text = $"{c1.Address}";
-            PUclientPNuber.Text = $"{c1.PNuber}";
-            PUclientBankAccount.Text = $"{c1.BankAccount}";
-            PUclientReliability.Text = $"{c1.Reliability}";
-            PUclientCredit.Text = $"{c1.Credit}";
+            //popupInfo.IsOpen = true;
+            //Client c1 = default;
+            //foreach (var ee in db.ClientBase)
+            //    if (ee.Id == (OperationList.SelectedItem as Log).Sender) { c1 = ee; break; }
+            //PUclientID.Text = $"{c1.Id}";
+            //PUclientFullName.Text = $"{c1.FullName}";
+            //PUclientAddress.Text = $"{c1.Address}";
+            //PUclientPNuber.Text = $"{c1.PNuber}";
+            //PUclientBankAccount.Text = $"{c1.BankAccount}";
+            //PUclientReliability.Text = $"{c1.Reliability}";
+            //PUclientCredit.Text = $"{c1.Credit}";
 
         }
         private void ClientInfo1(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            popupInfo.IsOpen = true;
-            Client c2 = default;
-            foreach (var ee in db.ClientBase)
-                if (ee.Id == (OperationList.SelectedItem as Log).Recipient) { c2 = ee; break; }
-            PUclientID.Text = $"{c2.Id}";
-            PUclientFullName.Text = $"{c2.FullName}";
-            PUclientAddress.Text = $"{c2.Address}";
-            PUclientPNuber.Text = $"{c2.PNuber}";
-            PUclientBankAccount.Text = $"{c2.BankAccount}";
-            PUclientReliability.Text = $"{c2.Reliability}";
-            PUclientCredit.Text = $"{c2.Credit}";
+            //popupInfo.IsOpen = true;
+            //Client c2 = default;
+            //foreach (var ee in db.ClientBase)
+            //    if (ee.Id == (OperationList.SelectedItem as Log).Recipient) { c2 = ee; break; }
+            //PUclientID.Text = $"{c2.Id}";
+            //PUclientFullName.Text = $"{c2.FullName}";
+            //PUclientAddress.Text = $"{c2.Address}";
+            //PUclientPNuber.Text = $"{c2.PNuber}";
+            //PUclientBankAccount.Text = $"{c2.BankAccount}";
+            //PUclientReliability.Text = $"{c2.Reliability}";
+            //PUclientCredit.Text = $"{c2.Credit}";
 
         }
         private void ClientInfo2(object sender, System.Windows.Input.MouseEventArgs e)
@@ -360,7 +239,7 @@ namespace Bank_13_
         }
         private void CRepayment_button(object sender, RoutedEventArgs e)
         {
-            db.ClientBase[ClientsList.SelectedIndex].Repayment();
+            //db.ClientBase[ClientsList.SelectedIndex].Repayment();
         }
         private void BAUpdate_button(object sender, RoutedEventArgs e)
         {
@@ -368,11 +247,39 @@ namespace Bank_13_
         }
         private void PUBAUpdate_button(object sender, RoutedEventArgs e)
         {
-            if (BAUpdate.Text != null && BAUpdate.Text != "")
-            {
-                popupBAUpdate.IsOpen = false;
-                db.ClientBase[ClientsList.SelectedIndex].UpdateBankAccount(Convert.ToInt64(BAUpdate.Text), InOrOutBDUpdate.IsChecked.Value);
-            }
+            //if (BAUpdate.Text != null && BAUpdate.Text != "")
+            //{
+            //    popupBAUpdate.IsOpen = false;
+            //    db.ClientBase[ClientsList.SelectedIndex].UpdateBankAccount(Convert.ToInt64(BAUpdate.Text), InOrOutBDUpdate.IsChecked.Value);
+            //}
+        }
+        private void GVCellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+
+            db.row = (DataRowView)ClientsList.SelectedItem;
+            db.row.BeginEdit();
+        }
+        /// <summary>
+        /// Редактирование записи
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void GVCurrentCellChanged(object sender, EventArgs e)
+        {
+            if (db.row == null) return;
+            db.row.EndEdit();
+            db.da.Update(db.dt);
+        }
+        /// <summary>
+        /// Удаление записи
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MenuItemDeleteClick(object sender, RoutedEventArgs e)
+        {
+            db.row = (DataRowView)ClientsList.SelectedItem;
+            db.row.Row.Delete();
+            db.da.Update(db.dt);
         }
         #endregion
 

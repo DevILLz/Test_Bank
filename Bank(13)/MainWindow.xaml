@@ -16,10 +16,18 @@
             <ColumnDefinition MinWidth="390" Width="*"/>
         </Grid.ColumnDefinitions>
         <!--Таблица вывода базы клиентов-->
-        <DataGrid Name="ClientsList" SelectionMode="Extended" Grid.Column="0" ItemsSource="{Binding}" AutoGenerateColumns="False" Grid.Row="1" >
+        <DataGrid Name="ClientsList" SelectionMode="Extended" 
+                  Grid.Column="0" ItemsSource="{Binding}" 
+                  AutoGenerateColumns="False" Grid.Row="1" 
+                  CurrentCellChanged="GVCurrentCellChanged"
+                  CellEditEnding="GVCellEditEnding"
+                  CanUserDeleteRows="False"
+                  
+                  >
             <DataGrid.Columns>
-                <DataGridTextColumn Header="ID" Binding="{Binding FullName}" Width="250"/>
-                <DataGridTextColumn Header="Счет" Binding="{Binding Money}" MinWidth="70" Width="70" IsReadOnly="True"/>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="35" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Имя" Binding="{Binding FullName}" MinWidth="100" Width="70"/>
+                <DataGridTextColumn Header="Счет" Binding="{Binding MainAccount}" MinWidth="70" Width="70" IsReadOnly="True"/>
             </DataGrid.Columns>
             <DataGrid.ContextMenu>
                 <ContextMenu>
@@ -28,7 +36,8 @@
                     <MenuItem Header="Сделать перевод" Click="Transfer_button"/>
                     <MenuItem Header="Внести деньги на банковский счет" Click="BAUpdate_button"/>
                     <Separator/>
-                    <MenuItem Header="Информация" Click="Info_button"/>
+                    <MenuItem Header="Информация" Click="Info_button"/> MenuItemDeleteClick
+                    <MenuItem Header="Удалить клиента" Click="MenuItemDeleteClick"/> 
                 </ContextMenu>
             </DataGrid.ContextMenu>
         </DataGrid>
@@ -91,27 +100,23 @@
                 </GroupBox.BorderBrush>
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Получатель:  "/>
-                        <ComboBox ItemsSource="{Binding}" SelectedIndex="0" Name="cb2">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Width="20" FontWeight="Light" Text="{Binding Id}" />
-                                        <TextBlock Width="200" FontWeight="Light" Text="{Binding FullName}"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="ID получателя: "/>
+                        <TextBox x:Name="Tidrec" DataObject.Pasting="OnPasting" PreviewTextInput="Tmoney_PreviewTextInput" Width="50"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Имя = "/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="Tname"/>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal">
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Адресс = "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.Address, ElementName=cb2}"/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="Tadress"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Номер = "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.PNuber, ElementName=cb2}"/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="Tpnumber"/>
                     </StackPanel>
                     <TextBox x:Name="Tmoney" DataObject.Pasting="OnPasting" PreviewTextInput="Tmoney_PreviewTextInput"/>
                     <Button Content="ОК" Click="Transfer1_button" IsDefault="True"/>
@@ -132,22 +137,6 @@
                     <TextBlock TextWrapping="Wrap" Text="Сумма" Margin="10,0,0,0"/>
                     <TextBox x:Name="Cmoney" DataObject.Pasting="OnPasting" PreviewTextInput="Tmoney_PreviewTextInput" Width="100" Margin="0,0,0,10"/>
                     <Button Content="ОК" Click="Creditt_button" IsDefault="True"/>
-                </StackPanel>
-            </GroupBox>
-        </Popup>
-        <!--Высплывающее окно с установкой новой даты системы (отладка)-->
-        <Popup x:Name="NewDatePU" StaysOpen="False" Placement="Mouse" AllowsTransparency="True" PopupAnimation="Scroll" >
-            <GroupBox Header="Перевод" Background="White" FontWeight="Bold" FontSize="14" >
-                <GroupBox.BorderBrush>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="Black"/>
-                        <GradientStop Color="#FF350000" Offset="0.5"/>
-                        <GradientStop Color="#FF8B1313" Offset="1"/>
-                    </LinearGradientBrush>
-                </GroupBox.BorderBrush>
-                <StackPanel>
-                    <DatePicker Name="DatePU"/>
-                    <Button Content="ОК" Click="DateOK_b" IsDefault="True"/>
                 </StackPanel>
             </GroupBox>
         </Popup>
@@ -213,16 +202,11 @@
         <!--Меню-->
         <Menu Grid.Row="0" Grid.ColumnSpan="3" >
             <MenuItem Header="File">
-                <!--Импорт данных в таблицу из выбранного места-->
-                <MenuItem Header="Импорт данных в таблицу" Click="Import_button"/>
-                <!--Экспорт данных из таблицы в выбранное место-->
-                <MenuItem Header="Экспорт данных из таблицы" Click="Export_button"/>
                 <MenuItem Header="Создать новую БД" Click="NewDB_button"/>
             </MenuItem>
             <MenuItem Header="Работа системы">
                 <MenuItem Header="Добавить клиента" Click="Add_button"/>
                 <MenuItem Name="MenuImmination" Header="{Binding}" Click="ImmitationOn"/>
-                <MenuItem Header="Задать текущую дату БД" Click="NewDate_button"/>
             </MenuItem>
 
         </Menu>
@@ -232,10 +216,10 @@
                   Margin="10,0,0,0">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Дата"  Binding="{Binding Date}" MinWidth="130"/>
-                <DataGridTextColumn Header="Отп" Binding="{Binding Sender}" MinWidth="40" />
-                <DataGridTextColumn Header="Пол" Binding="{Binding Recipient}" MinWidth="40"/>
-                <DataGridTextColumn Header="₽"  Binding="{Binding AmountOfMoney}" MinWidth="70" MaxWidth="70" />
-                <DataGridTextColumn Header="?"  Binding="{Binding Success}" MinWidth="70" MaxWidth="70" />
+                <DataGridTextColumn Header="Отпр" Binding="{Binding SenderID}" MinWidth="40" />
+                <DataGridTextColumn Header="Получ" Binding="{Binding RecipientID}" MinWidth="40"/>
+                <DataGridTextColumn Header="₽"  Binding="{Binding MoneyAmount}" MinWidth="70" MaxWidth="70" />
+                <DataGridTextColumn Header="?"  Binding="{Binding Successful}" MinWidth="70" MaxWidth="70" />
             </DataGrid.Columns>
             <DataGrid.ContextMenu>
                 <ContextMenu>

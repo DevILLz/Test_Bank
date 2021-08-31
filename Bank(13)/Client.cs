@@ -97,15 +97,7 @@ namespace Bank_13_
         /// </summary>
         /// <param name="money">Цена</param>
         /// <returns></returns>
-        public long Transfer(long money)
-        {
-            if (this.Money >= money)
-            {
-                this.Money -= money;//иммитация покупки\снятия наличных
-                return money;
-            }
-            return 0;
-        }
+
         /// <summary>
         /// Новый кредит (последующие добавляются сверху)
         /// </summary>
@@ -396,11 +388,4 @@ namespace Bank_13_
 
     }
 
-    public static class EX
-    {
-        public static void AddIntoBank(this Client c, Bank db)
-        {
-            db.AddClient(c);
-        }
-    }
 }

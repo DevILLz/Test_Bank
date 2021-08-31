@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Data;
+using System.Windows;
 
 namespace Bank_13_
 {
@@ -7,22 +8,24 @@ namespace Bank_13_
     /// </summary>
     public partial class NewClient : Window
     {
-        MainWindow parent;
+        private NewClient() { InitializeComponent(); }
 
-        public NewClient(MainWindow parent)
+        public NewClient(DataRow r) : this()
         {
-            InitializeComponent();
-            this.parent = parent;
-            type.Items.Add("Client");
-            type.Items.Add("VIP");
-            type.Items.Add("Entitie");
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            MainWindow.db.AddClient(type.Text, fullName.Text, address.Text, pNuber.Text, reliability.IsChecked.Value);
+            int rand = new System.Random().Next(500, 800);
+            Closing += delegate { if (DialogResult != true) DialogResult = false; };
+            Button_Click.Click += delegate
+            {
+                r["Type"] = type.SelectionBoxItem;
+                r["FullName"] = fullName.Text;
+                r["MainAccount"] = 0;
+                r["Address"] = address.Text;
+                r["BankAccount"] = 0;
+                r["Reliability"] = reliability.IsChecked;
+                r["PhoneNumber"] = pNuber.Text;
+                DialogResult = true;
+            };
             
-            this.Close();
         }
     }
 }
