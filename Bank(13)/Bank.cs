@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bank_13_
@@ -30,7 +28,7 @@ namespace Bank_13_
             da = new SqlDataAdapter();
             dtl = new DataTable();
             dal = new SqlDataAdapter();
-            #region commands
+            #region Комманды для таблицы с клиентами
 
             var sql = @"SELECT [Id], [Type], [FullName], CAST([MainAccount] AS int) as MainAccount, [Address], CAST([BankAccount] AS int) as BankAccount, [Reliability], [Credit], [PhoneNumber], [Current] FROM Clients Order By Clients.Id";
             
@@ -80,7 +78,7 @@ namespace Bank_13_
             da.DeleteCommand.Parameters.Add("@Id", SqlDbType.Int, 4, "Id");
 
             #endregion
-            #region commands2
+            #region Комманды для таблицы с логами
 
             sql = @"SELECT [Id], [Date], CAST([MoneyAmount] AS int) AS MoneyAmount, [SenderID], [RecipientID], [Successful] FROM Logs Order By Logs.Id";
             dal.SelectCommand = new SqlCommand(sql, con);
@@ -106,6 +104,10 @@ namespace Bank_13_
             da.Fill(dt);
             dal.Fill(dtl);
         }
+        /// <summary>
+        /// Создание новой ДБ
+        /// </summary>
+        /// <param name="w"></param>
         public void CreateBank(MainWindow w)
         {
             con.Open();
@@ -127,6 +129,9 @@ namespace Bank_13_
             });
             con.Close();
         }
+        /// <summary>
+        /// Рандомизатор добавления клиентов
+        /// </summary>
         private void CBNW()
         {
             string sql;
@@ -204,6 +209,7 @@ namespace Bank_13_
         /// <summary>
         /// Новый кредит (последующие добавляются сверху)
         /// </summary>
+        /// <param name="i">Элемент БД</param>
         /// <param name="money">Сумма</param>
         public void NewCredit(int i, int money)
         {
@@ -218,6 +224,10 @@ namespace Bank_13_
             else dt.Rows[i][7] = Convert.ToInt32(dt.Rows[i][7]) + (money + (money * (LR / 125)));//для надёжных клиентов, ставка по кредиту ниже
             da.Update(dt);
         }
+        /// <summary>
+        /// Погашение кредита
+        /// </summary>
+        /// <param name="i">Элемент БД</param>
         public void Repayment(int i)
         {
             if (Convert.ToInt32(dt.Rows[i][7]) > 0 && Convert.ToInt32(dt.Rows[i][3]) >= Convert.ToInt32(dt.Rows[i][7]))
@@ -230,7 +240,7 @@ namespace Bank_13_
             }
         }
         /// <summary>
-        /// Добавить деньги на счет
+        /// Добавить/снять деньги на счет/со счета
         /// </summary>
         /// <param name="money">Сумма</param>
         public void UpdateBankAccount(int index, int money, bool outside)
@@ -253,6 +263,11 @@ namespace Bank_13_
             }
             da.Update(dt);
         }
+        /// <summary>
+        /// Условное снятие наличных
+        /// </summary>
+        /// <param name="i">Элемент БД</param>
+        /// <param name="money">Сумма</param>
         public void Withdrawal(int i, int money)
         {
             if (Convert.ToInt32(dt.Rows[i][3]) >= money)
@@ -263,8 +278,8 @@ namespace Bank_13_
         /// <summary>
         /// Ежемесячная проверка счёта
         /// </summary>
-        /// <param name="current">Текущая дата</param>
-        public void Update(int i)//В реальной системе этот параметр не нужен
+        /// <param name="i">Индекс элемента БД</param>
+        public void Update(int i)
         {
             lock (dt.Rows[i])
             {
@@ -302,6 +317,11 @@ namespace Bank_13_
                 da.Update(dt);
             }
         }
+        /// <summary>
+        /// Имитация пересылки денег между клиентами. По одной операции в условный месяц
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void Imitation(object sender, EventArgs e)
         {
 
