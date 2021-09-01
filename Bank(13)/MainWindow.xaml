@@ -36,7 +36,7 @@
                     <MenuItem Header="Сделать перевод" Click="Transfer_button"/>
                     <MenuItem Header="Внести деньги на банковский счет" Click="BAUpdate_button"/>
                     <Separator/>
-                    <MenuItem Header="Информация" Click="Info_button"/> MenuItemDeleteClick
+                    <MenuItem Header="Информация" Click="Info_button"/> 
                     <MenuItem Header="Удалить клиента" Click="MenuItemDeleteClick"/> 
                 </ContextMenu>
             </DataGrid.ContextMenu>
@@ -69,7 +69,7 @@
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Номер: "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="PUclientPNuber" Text="{Binding SelectedItem.PNuber, ElementName=ClientsList}"/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="PUclientPNuber" Text="{Binding SelectedItem.PhoneNumber, ElementName=ClientsList}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
@@ -188,12 +188,12 @@
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Получатель: "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="OperationRecipient" MouseMove="ClientInfo1" MouseLeave="ClientInfo2" />
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="OperationRecipient" MouseMove="ClientInfo" MouseLeave="ClientInfo2" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Сумма: "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.AmountOfMoney, ElementName=OperationList}" />
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding SelectedItem.MoneyAmount, ElementName=OperationList}" />
                     </StackPanel>
                     <Button Click="PopupLogInfoExit" Content="Ok" Height="20"/>
                 </StackPanel>

@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bank_13_
 {
@@ -37,7 +38,7 @@ namespace Bank_13_
 
 
             sql = @"INSERT INTO Clients (Type, FullName,  MainAccount,  [Address], BankAccount, Reliability, Credit, PhoneNumber, [Current]) 
-                                 VALUES (@Type, @FullName, @MainAccount, @Address, @BankAccount, @Reliability, 0, @PhoneNumber, 0); 
+                                 VALUES (@Type, @FullName, @MainAccount, @Address, @BankAccount, @Reliability, CAST(0.0000 AS Money), @PhoneNumber, CAST(0 AS TinyInt)); 
                      SET @Id = @@IDENTITY;";
 
             da.InsertCommand = new SqlCommand(sql, con);
@@ -99,8 +100,8 @@ namespace Bank_13_
             sql = "DELETE FROM Logs WHERE Id = @Id";
 
             dal.DeleteCommand = new SqlCommand(sql, con);
-            dal.DeleteCommand.Parameters.Add("@Id", SqlDbType.Int, 4, "Id");
-
+            dal.DeleteCommand.Parameters.Add("@Id", SqlDbType.Int, 7, "Id");
+     
             #endregion
             da.Fill(dt);
             dal.Fill(dtl);
@@ -156,10 +157,27 @@ namespace Bank_13_
         /// <param name="money">Сумма</param>
         public void Transfer(int c1, int c2, int money)
         {
-            if (Convert.ToInt32(dt.Rows[c1-1].ItemArray[3]) >= money)
+            byte cc = 0;
+            bool flag = false;
+            foreach (DataRow e in dt.Rows) if (Convert.ToInt32(e[0]) == c2) flag = true;
+            if (flag && Convert.ToInt32(dt.Rows[c1 - 1].ItemArray[3]) >= money)
             {
-                dt.Rows[c1 - 1][3] = Convert.ToInt32(dt.Rows[c1 - 1][3]) - money;
-                dt.Rows[c2 - 1][3] = Convert.ToInt32(dt.Rows[c2 - 1][3]) + money;
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    int c = Convert.ToInt32(dt.Rows[i][0]);
+                    if (c == c1)
+                    {
+                        dt.Rows[i][3] = Convert.ToInt32(dt.Rows[i][3]) - money;
+                        cc++;
+                        if (cc == 2) break;
+                    }
+                    if (c == c2)
+                    {
+                        dt.Rows[i][3] = Convert.ToInt32(dt.Rows[i][3]) + money;
+                        cc++;
+                        if (cc == 2) break;
+                    }
+                }
                 da.Update(dt);
                 DataRow r = dtl.NewRow();
                 r["Date"] = DateTime.Now;
@@ -183,24 +201,124 @@ namespace Bank_13_
             }
 
         }
+        /// <summary>
+        /// Новый кредит (последующие добавляются сверху)
+        /// </summary>
+        /// <param name="money">Сумма</param>
+        public void NewCredit(int i, int money)
+        {
+            float LR = Convert.ToString(dt.Rows[i][1]) switch
+            {
+                "VIP" => 9,
+                "Entitie" => 5,
+                _ => 15,
+            };
+            dt.Rows[i][3] = Convert.ToInt32(dt.Rows[i][3]) + money;
+            if (!Convert.ToBoolean(dt.Rows[i][6])) dt.Rows[i][7] = Convert.ToInt32(dt.Rows[i][7]) + (money + (money * (LR / 100)));
+            else dt.Rows[i][7] = Convert.ToInt32(dt.Rows[i][7]) + (money + (money * (LR / 125)));//для надёжных клиентов, ставка по кредиту ниже
+            da.Update(dt);
+        }
+        public void Repayment(int i)
+        {
+            if (Convert.ToInt32(dt.Rows[i][7]) > 0 && Convert.ToInt32(dt.Rows[i][3]) >= Convert.ToInt32(dt.Rows[i][7]))
+            {
+                dt.Rows[i][3] = Convert.ToInt32(dt.Rows[i][3]) - Convert.ToInt32(dt.Rows[i][7]);
+                dt.Rows[i][7] = 0;
+                dt.Rows[i][9] = 0;
+                dt.Rows[i][6] = true;
+                da.Update(dt);
+            }
+        }
+        /// <summary>
+        /// Добавить деньги на счет
+        /// </summary>
+        /// <param name="money">Сумма</param>
+        public void UpdateBankAccount(int index, int money, bool outside)
+        {
+            if (outside)
+            {
+                if (Convert.ToInt32(dt.Rows[index][5]) >= money)
+                {
+                    dt.Rows[index][3] = Convert.ToInt32(dt.Rows[index][3]) + money;
+                    dt.Rows[index][5] = Convert.ToInt32(dt.Rows[index][5]) - money;
+                }
+            }
+            else
+            {
+                if (Convert.ToInt32(dt.Rows[index][3]) >= money)
+                {
+                    dt.Rows[index][5] = Convert.ToInt32(dt.Rows[index][5]) + money;
+                    dt.Rows[index][3] = Convert.ToInt32(dt.Rows[index][3]) - money;
+                }
+            }
+            da.Update(dt);
+        }
+        public void Withdrawal(int i, int money)
+        {
+            if (Convert.ToInt32(dt.Rows[i][3]) >= money)
+            {
+                dt.Rows[i][3] = Convert.ToInt32(dt.Rows[i][3]) - money;
+            }
+        }
+        /// <summary>
+        /// Ежемесячная проверка счёта
+        /// </summary>
+        /// <param name="current">Текущая дата</param>
+        public void Update(int i)//В реальной системе этот параметр не нужен
+        {
+            lock (dt.Rows[i])
+            {
+                int Money = Convert.ToInt32(dt.Rows[i][3]);
+                int BankAccount = Convert.ToInt32(dt.Rows[i][5]);
+                bool Reliability = Convert.ToBoolean(dt.Rows[i][6]);
+                int Credit = Convert.ToInt32(dt.Rows[i][7]);
+                byte count = Convert.ToByte(dt.Rows[i][9]);
+
+                float AIR = Convert.ToString(dt.Rows[i][1]) switch
+                {
+                    "VIP" => 13,
+                    "Entitie" => 15,
+                    _ => 9,
+                };
+
+                if (Reliability)
+                {
+                    dt.Rows[i][5] = BankAccount + (int)(BankAccount * (AIR / 100 / 12));
+                    dt.Rows[i][3] = (int)(Money * 1.01);//каддый месяц 1% от остатка
+                }//Т.К. в теории оно происходит каждый день, нет смысла делать дополнительные проверки
+
+                if (Credit > 0)
+                {
+                    if (Money > Credit / 10)
+                    {
+                        dt.Rows[i][3] = Credit - (Credit / 10);//каждый месяц выплачивается 10% от остатка кредита
+                        dt.Rows[i][7] = Credit - (Credit / 10);
+                        if (count > 0) dt.Rows[i][9] = count - 1;
+                        else dt.Rows[i][6] = true;//клиент становится надёжным, если не просрочил хотя бы один месяц
+                    }
+                    if (Credit < 100 && Money >= 100) { dt.Rows[i][3] = Money - Credit; dt.Rows[i][7] = 0; } //последние 100 Рублей снимаются сами, выходя из бесконечного цикла
+                }
+                if (count >= 5) dt.Rows[i][6] = false;//если просрочил кредит 5 месяцев к ряду, надёжность пропадает
+            }
+        }
         public void Imitation(object sender, EventArgs e)
         {
-            //if (ClientBase.Count > 0)
-            //{
-            //    int c1 = r.Next(0, ClientBase.Count - 1);
-            //    Thread.Sleep(100);
-            //    int c2 = r.Next(0, ClientBase.Count - 1);
-            //    long tempM = r.Next(100, 1000);
-            //    long t = ClientBase[c1].Transfer(tempM);
-            //    if (t > 0)
-            //    {
-            //        ClientBase[c2].AddMoney(t);
-            //        OperationList.Add(new Log(ClientBase[c1].Id, ClientBase[c2].Id, t, true));
-            //    }
-            //    else OperationList.Add(new Log(ClientBase[c1].Id, ClientBase[c2].Id, tempM, false));
-            //}
-            //Date = Date.AddMonths(1);
-            //Update(Date);
+
+                if (dt.Rows.Count > 0)
+                {
+                    int c1 = r.Next(0, dt.Rows.Count - 1);
+                    int c2 = r.Next(0, dt.Rows.Count - 1);
+                    int tempM = r.Next(100, 1000);
+                    Transfer(c1, c2, tempM);
+                }
+
+            Task.Factory.StartNew(() =>
+            {
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    Update(i);
+                }
+            });
         }
     }
 }

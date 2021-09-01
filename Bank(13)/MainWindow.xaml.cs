@@ -134,23 +134,21 @@ namespace Bank_13_
             if (Cmoney.Text != null && Cmoney.Text != "")
             {
                 CreditPU.IsOpen = false;
-                db.con.Open();
-                new SqlCommand(
-                    $@"UPDATE Clients SET Credit = {Convert.ToInt64(Cmoney.Text)} 
-                    WHERE Id = {(ClientsList.SelectedItem as DataRowView).Row.ItemArray[0]}", db.con).ExecuteNonQuery();
-                db.con.Close();
+                db.NewCredit(ClientsList.SelectedIndex, Convert.ToInt32(Cmoney.Text));
             }
         }//кнопка ОК внутри popup выдачи кредитов
-
-
         void ds(object sender, RoutedEventArgs e)
         {
+            int c = -1;
+            for (int i = 0; i < db.dt.Rows.Count; i++)
+            {
+                if (Convert.ToString(db.dt.Rows[i][0]) == Tidrec.Text) { c = i; break; }
+            }
             try
             {
-                Tname.Text = db.dt.Rows[Convert.ToInt32(Tidrec.Text)-1].ItemArray[2].ToString();
-                Tadress.Text = db.dt.Rows[Convert.ToInt32(Tidrec.Text)-1].ItemArray[4].ToString();
-                Tpnumber.Text = db.dt.Rows[Convert.ToInt32(Tidrec.Text)-1].ItemArray[8].ToString();
-
+                Tname.Text = db.dt.Rows[c].ItemArray[2].ToString();
+                Tadress.Text = db.dt.Rows[c].ItemArray[4].ToString();
+                Tpnumber.Text = db.dt.Rows[c].ItemArray[8].ToString();
             }
             catch
             {
@@ -187,46 +185,36 @@ namespace Bank_13_
         {
             e.Handled = !e.Text.All(IsGood);
         }//защита ввода (цифры)
+
         private void OperationListInfo_click(object sender, RoutedEventArgs e)
         {
-            //popupLogInfo.IsOpen = true;
-            //Client c1 = default, c2 = default;
-            //foreach (var ee in db.ClientBase)
-            //    if (ee.Id == (OperationList.SelectedItem as Log).Sender) { c1 = ee; break; }
-            //foreach (var ee in db.ClientBase)
-            //    if (ee.Id == (OperationList.SelectedItem as Log).Recipient) { c2 = ee; break; }
-            //OperationSender.Text = $"{c1.Id}  {c1.FullName}";
-            //OperationRecipient.Text = $"{c2.Id}  {c2.FullName}";
+            popupLogInfo.IsOpen = true;
+            var c1 = Convert.ToInt32((OperationList.SelectedItem as DataRowView).Row[3]);
+            var c2 = Convert.ToInt32((OperationList.SelectedItem as DataRowView).Row[4]);
+             
+            OperationSender.Text = $"{Convert.ToInt32(db.dt.Rows[c1 - 1][0])}  {db.dt.Rows[c1 - 1][2]}";
+            OperationRecipient.Text = $"{Convert.ToInt32(db.dt.Rows[c2 - 1][0])}  {db.dt.Rows[c2 - 1][2]}";
         }
         private void ClientInfo(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            //popupInfo.IsOpen = true;
-            //Client c1 = default;
-            //foreach (var ee in db.ClientBase)
-            //    if (ee.Id == (OperationList.SelectedItem as Log).Sender) { c1 = ee; break; }
-            //PUclientID.Text = $"{c1.Id}";
-            //PUclientFullName.Text = $"{c1.FullName}";
-            //PUclientAddress.Text = $"{c1.Address}";
-            //PUclientPNuber.Text = $"{c1.PNuber}";
-            //PUclientBankAccount.Text = $"{c1.BankAccount}";
-            //PUclientReliability.Text = $"{c1.Reliability}";
-            //PUclientCredit.Text = $"{c1.Credit}";
+            popupInfo.IsOpen = true;
+            int SoR = 0;
+            DataRow c1 = (OperationList.SelectedItem as DataRowView).Row;
+            if ((sender as FrameworkElement).Name == "OperationSender") SoR = 3;
+            else SoR = 4;
+            foreach (DataRow ee in db.dt.Rows)
+            {
+                if (Convert.ToInt32(ee.ItemArray[0]) == Convert.ToInt32(c1.ItemArray[SoR])) { c1 = ee; break; }
+            }
 
-        }
-        private void ClientInfo1(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            //popupInfo.IsOpen = true;
-            //Client c2 = default;
-            //foreach (var ee in db.ClientBase)
-            //    if (ee.Id == (OperationList.SelectedItem as Log).Recipient) { c2 = ee; break; }
-            //PUclientID.Text = $"{c2.Id}";
-            //PUclientFullName.Text = $"{c2.FullName}";
-            //PUclientAddress.Text = $"{c2.Address}";
-            //PUclientPNuber.Text = $"{c2.PNuber}";
-            //PUclientBankAccount.Text = $"{c2.BankAccount}";
-            //PUclientReliability.Text = $"{c2.Reliability}";
-            //PUclientCredit.Text = $"{c2.Credit}";
-
+            PUclientID.Text = $"{c1[0]}";
+            PUclientFullName.Text = $"{c1[2]}";
+            PUclientAddress.Text = $"{c1[4]}";
+            PUclientPNuber.Text = $"{c1[8]}";
+            PUclientBankAccount.Text = $"{c1[5]}";
+            PUclientReliability.Text = $"{c1[6]}";
+            PUclientCredit.Text = $"{c1[7]}";
+            
         }
         private void ClientInfo2(object sender, System.Windows.Input.MouseEventArgs e)
         {
@@ -239,7 +227,7 @@ namespace Bank_13_
         }
         private void CRepayment_button(object sender, RoutedEventArgs e)
         {
-            //db.ClientBase[ClientsList.SelectedIndex].Repayment();
+            db.Repayment(ClientsList.SelectedIndex);
         }
         private void BAUpdate_button(object sender, RoutedEventArgs e)
         {
@@ -247,11 +235,12 @@ namespace Bank_13_
         }
         private void PUBAUpdate_button(object sender, RoutedEventArgs e)
         {
-            //if (BAUpdate.Text != null && BAUpdate.Text != "")
-            //{
-            //    popupBAUpdate.IsOpen = false;
-            //    db.ClientBase[ClientsList.SelectedIndex].UpdateBankAccount(Convert.ToInt64(BAUpdate.Text), InOrOutBDUpdate.IsChecked.Value);
-            //}
+            if (BAUpdate.Text != null && BAUpdate.Text != "")
+            {
+                popupBAUpdate.IsOpen = false;
+                
+                db.UpdateBankAccount(ClientsList.SelectedIndex, Convert.ToInt32(BAUpdate.Text), InOrOutBDUpdate.IsChecked.Value);
+            }
         }
         private void GVCellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
