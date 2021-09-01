@@ -72,6 +72,7 @@ namespace Bank_13_
         {
             if (!flag)
             {
+                db.con.Open();
                 timer = new();
                 timer.Interval = new TimeSpan(0, 0, 0, 1);
                 timer.Tick += db.Imitation;
@@ -82,6 +83,7 @@ namespace Bank_13_
             {
                 timer.Stop();
                 flag = false;
+                db.con.Close();
             }
         }
 

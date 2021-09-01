@@ -10,6 +10,7 @@ namespace Bank_13_
     /// </summary>
     public class Bank
     {
+        Task t;
         Random r = new();
         public SqlConnection con;
         public SqlDataAdapter da, dal;
@@ -28,8 +29,18 @@ namespace Bank_13_
             try
             {
                 con.Open();
+                con.Close();
             }
             catch { throw new Exception(""); }
+
+            t = new Task(() =>
+            {
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    Update(i);
+                }
+                da.Update(dt);
+            });
             dt = new DataTable();
             da = new SqlDataAdapter();
             dtl = new DataTable();
@@ -117,28 +128,43 @@ namespace Bank_13_
         public void CreateBank(MainWindow w)
         {
             con.Open();
-            new SqlCommand("truncate table Clients", con).ExecuteNonQuery();
+            new SqlCommand("truncate table Clients; truncate table Logs;", con).ExecuteNonQuery();
             dt.Clear();
             int n = 6_000;
-            //Task[] tasks = new Task[n];
-            for (int i = 0; i < n; i++)
+            Task<string>[] tasks = new Task<string>[n/500];
+            for (int d = 0; d < n/500; d++)
             {
-                //tasks[i] = Task.Factory.StartNew(CBNW2);
-                CBNW();
+                tasks[d] = Task<string>.Factory.StartNew(() =>
+                {
+                    string sql = default;
+                    for (int i = 0; i < 500; i++)
+                    {
+                        sql +=CBNW();
+                    }
+                    return sql;
+                });
             }
-            //Task.WaitAll(tasks);
-
+            
+            Task.WaitAll(tasks);
+            for (int d = 0; d < n / 500; d++)
+            {
+            
+            new SqlCommand(tasks[d].Result, con).ExecuteNonQuery();
+              
+            }
             w.Dispatcher.Invoke(() =>
             {
                 dt.Clear();
                 da.Fill(dt);
+                dtl.Clear();
+                dal.Fill(dtl);
             });
             con.Close();
         }
         /// <summary>
         /// Рандомизатор добавления клиентов
         /// </summary>
-        private void CBNW()
+        private string CBNW()
         {
             string sql;
             int rand = new Random().Next(500, 800);
@@ -157,8 +183,7 @@ namespace Bank_13_
                                  VALUES ({"'Entitie'"}, N{"'Завод'"}, {rand}, N{"'Г. Москва, ул. Строителей 8'"},  {rand}, 1, 0, {"'+79384205543'"}, 0);";
                     break;
             }
-            new SqlCommand(sql, con).ExecuteNonQuery();
-
+            return sql;
         }
         /// <summary>
         /// Перевод денег между счетами 2х клиентов
@@ -320,7 +345,7 @@ namespace Bank_13_
                     if (Credit < 100 && Money >= 100) { dt.Rows[i][3] = Money - Credit; dt.Rows[i][7] = 0; } //последние 100 Рублей снимаются сами, выходя из бесконечного цикла
                 }
                 if (count >= 5) dt.Rows[i][6] = false;//если просрочил кредит 5 месяцев к ряду, надёжность пропадает
-                da.Update(dt);
+                
             }
         }
         /// <summary>
@@ -331,21 +356,18 @@ namespace Bank_13_
         public void Imitation(object sender, EventArgs e)
         {
 
-                if (dt.Rows.Count > 0)
-                {
-                    int c1 = r.Next(0, dt.Rows.Count - 1);
-                    int c2 = r.Next(0, dt.Rows.Count - 1);
-                    int tempM = r.Next(100, 1000);
-                    Transfer(c1, c2, tempM);
-                }
-
-            Task.Factory.StartNew(() =>
+            if (dt.Rows.Count > 0)
             {
-                for (int i = 0; i < dt.Rows.Count; i++)
-                {
-                    Update(i);
-                }
-            });
+                int c1 = r.Next(0, dt.Rows.Count - 1);
+                int c2 = r.Next(0, dt.Rows.Count - 1);
+                int tempM = r.Next(100, 1000);
+                Transfer(c1, c2, tempM);
+            }
+
+            if (t.Status == TaskStatus.RanToCompletion)
+                t.Start();
+
         }
+        
     }
 }
