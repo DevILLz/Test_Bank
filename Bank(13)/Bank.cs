@@ -299,6 +299,7 @@ namespace Bank_13_
                     if (Credit < 100 && Money >= 100) { dt.Rows[i][3] = Money - Credit; dt.Rows[i][7] = 0; } //последние 100 Рублей снимаются сами, выходя из бесконечного цикла
                 }
                 if (count >= 5) dt.Rows[i][6] = false;//если просрочил кредит 5 месяцев к ряду, надёжность пропадает
+                da.Update(dt);
             }
         }
         public void Imitation(object sender, EventArgs e)
