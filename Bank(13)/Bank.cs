@@ -24,6 +24,12 @@ namespace Bank_13_
                 Pooling = true
             };
             con = new SqlConnection(connect.ConnectionString);
+
+            try
+            {
+                con.Open();
+            }
+            catch { throw new Exception(""); }
             dt = new DataTable();
             da = new SqlDataAdapter();
             dtl = new DataTable();

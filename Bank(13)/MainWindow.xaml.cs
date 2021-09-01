@@ -22,10 +22,22 @@ namespace Bank_13_
         {
             InitializeComponent();
             Task.Factory.StartNew(Start);
+            
         }
         private void Start()
         {
-            db = new();
+            try
+            {
+                db = new();
+            }
+            catch
+            {
+                if (MessageBox.Show("Не удалось подключится к базе данных", "Error", MessageBoxButton.OK) == System.Windows.MessageBoxResult.OK)
+                {
+                    Environment.Exit(0);
+                }
+            }
+
             this.Dispatcher.Invoke(() =>
             {
             MenuImmination.Header = "Включить иммитацию";
