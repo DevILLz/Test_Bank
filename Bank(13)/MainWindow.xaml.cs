@@ -100,10 +100,7 @@ namespace Bank_13_
         }
 
         #region Кнопочки
-        private static double Map(int value, int fromLow, int fromHigh, int toLow, int toHigh)
-        {
-            return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
-        }
+        
         private void Add_button(object sender, RoutedEventArgs e)
         {
 

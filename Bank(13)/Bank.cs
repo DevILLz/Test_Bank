@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Bank_13_
 {
@@ -144,14 +145,27 @@ namespace Bank_13_
                     return sql;
                 });
             }
-            
+
+            w.Dispatcher.Invoke(() =>
+            {
+                w.PB.Visibility = Visibility.Visible;
+            });
             Task.WaitAll(tasks);
             for (int d = 0; d < n / 500; d++)
             {
             
             new SqlCommand(tasks[d].Result, con).ExecuteNonQuery();
-              
+                w.Dispatcher.Invoke(() =>
+                {
+                    w.PB.Value = Map(d, 0, n/500, 0, 100);
+                });
             }
+            w.Dispatcher.Invoke(() =>
+            {
+                w.LoadInfo.Visibility = Visibility.Hidden;
+                w.PB.Visibility = Visibility.Hidden;
+            });
+
             w.Dispatcher.Invoke(() =>
             {
                 dt.Clear();
@@ -184,6 +198,11 @@ namespace Bank_13_
                     break;
             }
             return sql;
+        }
+        public static int Map(int value, int fromLow, int fromHigh, int toLow, int toHigh)
+        {
+            int s = (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
+            return s;
         }
         /// <summary>
         /// Перевод денег между счетами 2х клиентов
