@@ -6,10 +6,12 @@ using System.Windows;
 
 namespace Bank_13_
 {
-    interface IBank
+    public interface IBank
     {
         public void CreateBank(MainWindow w);
-        public void AddNewClient();
+        public void DataBinding(MainWindow w);
+        public void Imitation(object sender, EventArgs e);
+        public void AddNewClient(MainWindow w);
         public void Transfer(int c1, int c2, int money);
         public void NewCredit(int i, int money);
         public void Repayment(int i);
@@ -31,7 +33,7 @@ namespace Bank_13_
         public SqlDataAdapter da, dal;
         public DataTable dt, dtl;
         public DataRowView row;
-        public Bank(MainWindow w)
+        public Bank()
         {
             SqlConnectionStringBuilder connect = new SqlConnectionStringBuilder()
             {
@@ -135,6 +137,10 @@ namespace Bank_13_
             #endregion
             da.Fill(dt);
             dal.Fill(dtl);
+            
+        }
+        public void DataBinding(MainWindow w)
+        {
             w.Dispatcher.Invoke(() =>
             {
                 w.ClientsList.DataContext = dt.DefaultView;
@@ -229,10 +235,10 @@ namespace Bank_13_
             }
             return sql;
         }
-        public void AddNewClient()
+        public void AddNewClient(MainWindow w)
         {
             DataRow r = dt.NewRow();
-            NewClient window = new NewClient(r);
+            NewClient window = new NewClient(r, w);
             window.ShowDialog();
 
             if (window.DialogResult.Value)

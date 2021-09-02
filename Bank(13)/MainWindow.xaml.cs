@@ -16,7 +16,7 @@ namespace Bank_13_
     {
         DispatcherTimer timer;
         bool flag = false;
-        static public Bank db;
+        static public IBank db;
 
 
         public MainWindow()
@@ -27,7 +27,7 @@ namespace Bank_13_
         }
         private void Start()
         {
-            try { db = new(this); }
+            try { db = new Bank(); db.DataBinding(this); }
             catch
             {
                 if (MessageBox.Show("Не удалось подключится к базе данных", "Error", MessageBoxButton.OK) == System.Windows.MessageBoxResult.OK)
@@ -52,7 +52,7 @@ namespace Bank_13_
         void ds(object sender, RoutedEventArgs e)
         {
             int c = -1;
-            for (int i = 0; i < db.dt.Rows.Count; i++)
+            for (int i = 0; i < ClientsList.Items.Count; i++)
             {
                 if (Convert.ToString((ClientsList.Items[i] as DataRowView).Row[0]) == Tidrec.Text) { c = i; break; }
             }
@@ -90,7 +90,7 @@ namespace Bank_13_
         }//Создание новой БД
         private void Add_button(object sender, RoutedEventArgs e)
         {
-            db.AddNewClient();
+            db.AddNewClient(this);
         }//добавление нового клиента
         private void Info_button(object sender, RoutedEventArgs e)
         {

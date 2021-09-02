@@ -10,13 +10,13 @@ namespace Bank_13_
     {
         private NewClient() { InitializeComponent(); }
 
-        public NewClient(DataRow r) : this()
+        public NewClient(DataRow r, MainWindow w) : this()
         {
             int rand = new System.Random().Next(500, 800);
             Closing += delegate { if (DialogResult != true) DialogResult = false; };
             Button_Click.Click += delegate
             {
-                r["Id"] = System.Convert.ToInt32(MainWindow.db.dt.Rows[MainWindow.db.dt.Rows.Count-1][0])+1;
+                r["Id"] = System.Convert.ToInt32((w.ClientsList.Items[^0] as DataRowView).Row[0])+1;
                 r["Type"] = type.SelectionBoxItem;
                 r["FullName"] = fullName.Text == null ? fullName.Text : " ";
                 r["MainAccount"] = 0;
