@@ -204,11 +204,6 @@ namespace Bank_13_
                 }
             }
         }//При возможности ПЕРЕДЕЛАТЬ
-        private void GVCellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
-        {
-            db.StartEdit((DataRowView)ClientsList.SelectedItem);
-
-        }
         /// <summary>
         /// Редактирование записи
         /// </summary>
@@ -216,7 +211,7 @@ namespace Bank_13_
         /// <param name="e"></param>
         private void GVCurrentCellChanged(object sender, EventArgs e)
         {
-            db.EndEdit();
+            db.Update();
         }
         /// <summary>
         /// Удаление записи
@@ -225,7 +220,7 @@ namespace Bank_13_
         /// <param name="e"></param>
         private void MenuItemDeleteClick(object sender, RoutedEventArgs e)
         {
-            db.DeleteClient((DataRowView)ClientsList.SelectedItem);
+            db.DeleteClient(ClientsList.SelectedItem);
         }
         #endregion
 

@@ -20,7 +20,6 @@
                   Grid.Column="0" ItemsSource="{Binding}" 
                   AutoGenerateColumns="False" Grid.Row="1" 
                   CurrentCellChanged="GVCurrentCellChanged"
-                  CellEditEnding="GVCellEditEnding"
                   CanUserDeleteRows="False"
                   
                   >

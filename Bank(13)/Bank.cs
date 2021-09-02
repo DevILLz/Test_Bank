@@ -13,11 +13,10 @@ namespace Bank_13_
         public void Transfer(int c1, int c2, int money);
         public void NewCredit(int i, int money);
         public void Repayment(int i);
-        public void UpdateBankAccount(int index, int money, bool outsid;
+        public void UpdateBankAccount(int index, int money, bool outsid);
         public void Withdrawal(int i, int money);
+        public void Update();
         public void DeleteClient(object o);
-        public void StartEdit(object o);
-        public void EndEdit();
     }
     /// <summary>
     /// Набор функций взаимодействия с данными БД
@@ -430,21 +429,13 @@ namespace Bank_13_
                 t.Start();
 
         }
-        public void StartEdit(object r)
+
+        public void Update()
         {
-            row = (DataRowView)r;
-            row.BeginEdit();
-        }
-        public void EndEdit()
-        {
-            if (row == null) return;
-            row.EndEdit();
             da.Update(dt);
         }
         public void DeleteClient(object r)
         {
-            row = (DataRowView)r;
-            row.Row.Delete();
             da.Update(dt);
         }
     }
