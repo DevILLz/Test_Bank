@@ -25,24 +25,21 @@ namespace Bank_13_
     /// </summary>
     public class Bank: IBank
     {
-
-
-        Task t;
+        bool ImitFlag = false;
         Random r = new();
-        public SqlConnection con;
-        public SqlDataAdapter da, dal;
-        public DataTable dt, dtl;
-        public DataRowView row;
+        SqlConnection con;
+        SqlDataAdapter da, dal;
+        DataTable dt, dtl;
         public Bank()
         {
             SqlConnectionStringBuilder connect = new SqlConnectionStringBuilder()
             {
                 DataSource = @"(localdb)\MSSQLLocalDB",
                 InitialCatalog = "MSSQLLocalDemo",
-                Pooling = true
+                Pooling = true,
+                MultipleActiveResultSets = true
             };
             con = new SqlConnection(connect.ConnectionString);
-
             try
             {
                 con.Open();
@@ -50,14 +47,7 @@ namespace Bank_13_
             }
             catch { throw new Exception(""); }
 
-            t = new Task(() =>
-            {
-                for (int i = 0; i < dt.Rows.Count; i++)
-                {
-                    Update(i);
-                }
-                da.Update(dt);
-            });
+            
             dt = new DataTable();
             da = new SqlDataAdapter();
             dtl = new DataTable();
@@ -155,8 +145,7 @@ namespace Bank_13_
         {
             try
             {
-                lock (dt)
-                {
+                
                     con.Open();
                     new SqlCommand("truncate table Clients; truncate table Logs;", con).ExecuteNonQuery();
                     dt.Clear();
@@ -203,7 +192,7 @@ namespace Bank_13_
                         dal.Fill(dtl);
                     });
                     con.Close();
-                }
+                
                 
             }
             catch (Exception e)
@@ -238,14 +227,29 @@ namespace Bank_13_
         public void AddNewClient(MainWindow w)
         {
             DataRow r = dt.NewRow();
-            NewClient window = new NewClient(r, w);
-            window.ShowDialog();
-
-            if (window.DialogResult.Value)
+            string[] rr = new string[5];
+            w.Dispatcher.Invoke(() =>
             {
-                dt.Rows.Add(r);
-                da.Update(dt);
-            }
+                NewClient window = new NewClient(rr);
+                window.ShowDialog();
+
+                if (window.DialogResult.Value)
+                {
+                    r["Id"] = 0;
+                    r["Type"] = rr[0];
+                    r["FullName"] = rr[1];
+                    r["MainAccount"] = 0;
+                    r["Address"] = rr[2];
+                    r["Credit"] = 0;
+                    r["BankAccount"] = 0;
+                    r["Reliability"] = rr[3];
+                    r["PhoneNumber"] = rr[4];
+                    r["Current"] = 0;
+                    dt.Rows.Add(r);
+                    da.Update(dt);
+                }
+            });
+            
         }
         public static int Map(int value, int fromLow, int fromHigh, int toLow, int toHigh)
         {
@@ -281,7 +285,7 @@ namespace Bank_13_
                         if (cc == 2) break;
                     }
                 }
-                da.Update(dt);
+                //da.Update(dt);
                 DataRow r = dtl.NewRow();
                 r["Date"] = DateTime.Now;
                 r["MoneyAmount"] = money;
@@ -311,6 +315,7 @@ namespace Bank_13_
         /// <param name="money">Сумма</param>
         public void NewCredit(int i, int money)
         {
+
             float LR = Convert.ToString(dt.Rows[i][1]) switch
             {
                 "VIP" => 9,
@@ -321,6 +326,7 @@ namespace Bank_13_
             if (!Convert.ToBoolean(dt.Rows[i][6])) dt.Rows[i][7] = Convert.ToInt32(dt.Rows[i][7]) + (money + (money * (LR / 100)));
             else dt.Rows[i][7] = Convert.ToInt32(dt.Rows[i][7]) + (money + (money * (LR / 125)));//для надёжных клиентов, ставка по кредиту ниже
             da.Update(dt);
+
         }
         /// <summary>
         /// Погашение кредита
@@ -379,8 +385,6 @@ namespace Bank_13_
         /// <param name="i">Индекс элемента БД</param>
         public void Update(int i)
         {
-            lock (dt.Rows[i])
-            {
                 int Money = Convert.ToInt32(dt.Rows[i][3]);
                 int BankAccount = Convert.ToInt32(dt.Rows[i][5]);
                 bool Reliability = Convert.ToBoolean(dt.Rows[i][6]);
@@ -412,8 +416,6 @@ namespace Bank_13_
                     if (Credit < 100 && Money >= 100) { dt.Rows[i][3] = Money - Credit; dt.Rows[i][7] = 0; } //последние 100 Рублей снимаются сами, выходя из бесконечного цикла
                 }
                 if (count >= 5) dt.Rows[i][6] = false;//если просрочил кредит 5 месяцев к ряду, надёжность пропадает
-                
-            }
         }
         /// <summary>
         /// Имитация пересылки денег между клиентами. По одной операции в условный месяц
@@ -422,17 +424,25 @@ namespace Bank_13_
         /// <param name="e"></param>
         public void Imitation(object sender, EventArgs e)
         {
-
+            
             if (dt.Rows.Count > 0)
             {
                 int c1 = r.Next(0, dt.Rows.Count - 1);
                 int c2 = r.Next(0, dt.Rows.Count - 1);
                 int tempM = r.Next(100, 1000);
                 Transfer(c1, c2, tempM);
+                //Task.Factory.StartNew(() => Transfer(c1, c2, tempM));
             }
-
-            if (t.Status == TaskStatus.RanToCompletion)
-                t.Start();
+            if (!ImitFlag)
+                Task.Factory.StartNew(() =>
+                {
+                    ImitFlag = true;
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        Update(i);
+                    }
+                    ImitFlag = false;
+                });
 
         }
 

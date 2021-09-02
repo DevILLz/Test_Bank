@@ -17,13 +17,10 @@ namespace Bank_13_
         DispatcherTimer timer;
         bool flag = false;
         static public IBank db;
-
-
         public MainWindow()
         {
             InitializeComponent();
             Task.Factory.StartNew(Start);
-
         }
         private void Start()
         {
@@ -42,13 +39,6 @@ namespace Bank_13_
         /// </summary>
         /// <param name="c"></param>
         /// <returns></returns>
-        bool IsGood(char c)
-        {
-            if (c >= '0' && c <= '9')
-                return true;
-            return false;
-        }
-
         void ds(object sender, RoutedEventArgs e)
         {
             int c = -1;
@@ -69,6 +59,12 @@ namespace Bank_13_
                 Tpnumber.Text = "";
             }
         }// Информация о клиенте, которому будет выполнен перевод (По возможности ПЕРЕДЕЛАТЬ)
+        bool IsGood(char c)
+        {
+            if (c >= '0' && c <= '9')
+                return true;
+            return false;
+        }
         private void OnPasting(object sender, DataObjectPastingEventArgs e)
         {
             var stringData = (string)e.DataObject.GetData(typeof(string));
@@ -85,12 +81,18 @@ namespace Bank_13_
         #region Кнопочки    
         private void NewDB_button(object sender, RoutedEventArgs e)
         {
-            lock (db) Task.Factory.StartNew(() => db.CreateBank(this));
-            
+            if (flag)
+            {
+                timer.Stop();
+                flag = false;
+                MenuImmination.Header = "Включить иммитацию";
+            }
+            Task.Factory.StartNew(() => db.CreateBank(this));
+
         }//Создание новой БД
         private void Add_button(object sender, RoutedEventArgs e)
         {
-            db.AddNewClient(this);
+            Task.Factory.StartNew(() => db.AddNewClient(this));
         }//добавление нового клиента
         private void Info_button(object sender, RoutedEventArgs e)
         {
@@ -129,10 +131,14 @@ namespace Bank_13_
         }//кнопка контекстного меню ClientList
         private void Creditt_button(object sender, RoutedEventArgs e)
         {
+            
             if (Cmoney.Text != null && Cmoney.Text != "")
             {
                 CreditPU.IsOpen = false;
-                db.NewCredit(ClientsList.SelectedIndex, Convert.ToInt32(Cmoney.Text));
+                int i = ClientsList.SelectedIndex;
+                int t;
+                Int32.TryParse(Cmoney.Text, out t);
+                Task.Factory.StartNew(() => db.NewCredit(i, t));
             }
         }//кнопка ОК внутри popup выдачи кредитов
         private void Transfer_button(object sender, RoutedEventArgs e)
@@ -145,15 +151,17 @@ namespace Bank_13_
             if (Tmoney.Text != null && Tmoney.Text != "")
             {
                 popupTransfer.IsOpen = false;
-                db.Transfer(
-                    ClientsList.SelectedIndex,
-                    Convert.ToInt32(Tidrec.Text),
-                    Convert.ToInt32(Tmoney.Text));
+                int i = ClientsList.SelectedIndex,
+                    ii = Convert.ToInt32(Tidrec.Text),
+                    iii = Convert.ToInt32(Tmoney.Text);
+                Task.Factory.StartNew(() =>
+                db.Transfer(i,ii,iii));
             }
         }//кнопка ОК внутри popup трансферов
         private void CRepayment_button(object sender, RoutedEventArgs e)
         {
-            db.Repayment(ClientsList.SelectedIndex);
+            int i = ClientsList.SelectedIndex;
+            Task.Factory.StartNew(() => db.Repayment(i));
         }
         private void BAUpdate_button(object sender, RoutedEventArgs e)
         {
@@ -164,8 +172,10 @@ namespace Bank_13_
             if (BAUpdate.Text != null && BAUpdate.Text != "")
             {
                 popupBAUpdate.IsOpen = false;
-                
-                db.UpdateBankAccount(ClientsList.SelectedIndex, Convert.ToInt32(BAUpdate.Text), InOrOutBDUpdate.IsChecked.Value);
+                int i = ClientsList.SelectedIndex,
+                    ii = Convert.ToInt32(BAUpdate.Text);
+                bool b = InOrOutBDUpdate.IsChecked.Value;
+                Task.Factory.StartNew(() => db.UpdateBankAccount(i,ii,b));
             }
         }
         private void ClientInfo(object sender, System.Windows.Input.MouseEventArgs e)
@@ -212,6 +222,7 @@ namespace Bank_13_
         private void GVCurrentCellChanged(object sender, EventArgs e)
         {
             db.Update();
+            //Task.Factory.StartNew(() => db.Update());
         }
         /// <summary>
         /// Удаление записи
@@ -220,7 +231,8 @@ namespace Bank_13_
         /// <param name="e"></param>
         private void MenuItemDeleteClick(object sender, RoutedEventArgs e)
         {
-            db.DeleteClient(ClientsList.SelectedItem);
+            var o = ClientsList.SelectedItem;
+            Task.Factory.StartNew(() => db.DeleteClient(o));
         }
         #endregion
 
