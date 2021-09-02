@@ -210,6 +210,18 @@ namespace Bank_13_
             }
             return sql;
         }
+        public void AddNewClient()
+        {
+            DataRow r = dt.NewRow();
+            NewClient window = new NewClient(r);
+            window.ShowDialog();
+
+            if (window.DialogResult.Value)
+            {
+                dt.Rows.Add(r);
+                da.Update(dt);
+            }
+        }
         public static int Map(int value, int fromLow, int fromHigh, int toLow, int toHigh)
         {
             int s = (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
@@ -226,7 +238,7 @@ namespace Bank_13_
             byte cc = 0;
             bool flag = false;
             foreach (DataRow e in dt.Rows) if (Convert.ToInt32(e[0]) == c2) flag = true;
-            if (flag && Convert.ToInt32(dt.Rows[c1 - 1].ItemArray[3]) >= money)
+            if (flag && Convert.ToInt32(dt.Rows[c1].ItemArray[3]) >= money)
             {
                 for (int i = 0; i < dt.Rows.Count; i++)
                 {

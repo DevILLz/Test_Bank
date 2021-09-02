@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="" MinHeight="450" MinWidth="650" Width="770"  Closing="Window_Closing">
+        Title="" MinHeight="450" MinWidth="650" Width="770"  >
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
@@ -106,7 +106,7 @@
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Имя = "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="Tname"/>
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="Tname" />
                     </StackPanel>
                     
                     <StackPanel Orientation="Horizontal">
@@ -183,12 +183,12 @@
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Отправитель: "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="OperationSender" MouseMove="ClientInfo" MouseLeave="ClientInfo2" />
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="OperationSender" MouseEnter="ClientInfo" MouseLeave="ClientInfo2" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="Получатель: "/>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="OperationRecipient" MouseMove="ClientInfo" MouseLeave="ClientInfo2" />
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Name="OperationRecipient" MouseEnter="ClientInfo" MouseLeave="ClientInfo2" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
