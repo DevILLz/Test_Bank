@@ -128,52 +128,63 @@ namespace Bank_13_
         /// <param name="w"></param>
         public void CreateBank(MainWindow w)
         {
-            con.Open();
-            new SqlCommand("truncate table Clients; truncate table Logs;", con).ExecuteNonQuery();
-            dt.Clear();
-            int n = 6_000;
-            Task<string>[] tasks = new Task<string>[n/500];
-            for (int d = 0; d < n/500; d++)
+            try
             {
-                tasks[d] = Task<string>.Factory.StartNew(() =>
+                lock (dt)
                 {
-                    string sql = default;
-                    for (int i = 0; i < 500; i++)
+                    con.Open();
+                    new SqlCommand("truncate table Clients; truncate table Logs;", con).ExecuteNonQuery();
+                    dt.Clear();
+                    int n = 6_000;
+                    Task<string>[] tasks = new Task<string>[n / 500];
+                    for (int d = 0; d < n / 500; d++)
                     {
-                        sql +=CBNW();
+                        tasks[d] = Task<string>.Factory.StartNew(() =>
+                        {
+                            string sql = default;
+                            for (int i = 0; i < 500; i++)
+                            {
+                                sql += CBNW();
+                            }
+                            return sql;
+                        });
                     }
-                    return sql;
-                });
-            }
 
-            w.Dispatcher.Invoke(() =>
-            {
-                w.PB.Visibility = Visibility.Visible;
-            });
-            Task.WaitAll(tasks);
-            for (int d = 0; d < n / 500; d++)
-            {
-            
-            new SqlCommand(tasks[d].Result, con).ExecuteNonQuery();
-                w.Dispatcher.Invoke(() =>
-                {
-                    w.PB.Value = Map(d, 0, n/500, 0, 100);
-                });
-            }
-            w.Dispatcher.Invoke(() =>
-            {
-                w.LoadInfo.Visibility = Visibility.Hidden;
-                w.PB.Visibility = Visibility.Hidden;
-            });
+                    w.Dispatcher.Invoke(() =>
+                    {
+                        w.PB.Visibility = Visibility.Visible;
+                    });
+                    Task.WaitAll(tasks);
+                    for (int d = 0; d < n / 500; d++)
+                    {
 
-            w.Dispatcher.Invoke(() =>
+                        new SqlCommand(tasks[d].Result, con).ExecuteNonQuery();
+                        w.Dispatcher.Invoke(() =>
+                        {
+                            w.PB.Value = Map(d, 0, n / 500, 0, 100);
+                        });
+                    }
+                    w.Dispatcher.Invoke(() =>
+                    {
+                        w.LoadInfo.Visibility = Visibility.Hidden;
+                        w.PB.Visibility = Visibility.Hidden;
+                    });
+
+                    w.Dispatcher.Invoke(() =>
+                    {
+                        dt.Clear();
+                        da.Fill(dt);
+                        dtl.Clear();
+                        dal.Fill(dtl);
+                    });
+                    con.Close();
+                }
+                
+            }
+            catch (Exception e)
             {
-                dt.Clear();
-                da.Fill(dt);
-                dtl.Clear();
-                dal.Fill(dtl);
-            });
-            con.Close();
+                MessageBox.Show(e.Message);
+            }
         }
         /// <summary>
         /// Рандомизатор добавления клиентов

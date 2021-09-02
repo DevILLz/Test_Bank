@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -122,7 +121,7 @@ namespace Bank_13_
         }//кнопка контекстного меню ClientList
         private void NewDB_button(object sender, RoutedEventArgs e)
         {
-            Task.Factory.StartNew(() => db.CreateBank(this));
+            lock (db) Task.Factory.StartNew(() => db.CreateBank(this));
             
         }//Создание новой БД
         private void ImmitationOn(object sender, RoutedEventArgs e)
