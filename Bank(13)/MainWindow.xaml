@@ -206,7 +206,7 @@
             </MenuItem>
             <MenuItem Header="Работа системы">
                 <MenuItem Header="Добавить клиента" Click="Add_button"/>
-                <MenuItem Name="MenuImmination" Header="{Binding}" Click="ImmitationOn"/>
+                <MenuItem Name="MenuImmination" Header="Включить иммитацию" Click="ImmitationOn"/>
             </MenuItem>
 
         </Menu>

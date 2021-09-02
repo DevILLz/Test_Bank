@@ -6,18 +6,33 @@ using System.Windows;
 
 namespace Bank_13_
 {
+    interface IBank
+    {
+        public void CreateBank(MainWindow w);
+        public void AddNewClient();
+        public void Transfer(int c1, int c2, int money);
+        public void NewCredit(int i, int money);
+        public void Repayment(int i);
+        public void UpdateBankAccount(int index, int money, bool outsid;
+        public void Withdrawal(int i, int money);
+        public void DeleteClient(object o);
+        public void StartEdit(object o);
+        public void EndEdit();
+    }
     /// <summary>
     /// Набор функций взаимодействия с данными БД
     /// </summary>
-    public class Bank
+    public class Bank: IBank
     {
+
+
         Task t;
         Random r = new();
         public SqlConnection con;
         public SqlDataAdapter da, dal;
         public DataTable dt, dtl;
         public DataRowView row;
-        public Bank()
+        public Bank(MainWindow w)
         {
             SqlConnectionStringBuilder connect = new SqlConnectionStringBuilder()
             {
@@ -121,6 +136,11 @@ namespace Bank_13_
             #endregion
             da.Fill(dt);
             dal.Fill(dtl);
+            w.Dispatcher.Invoke(() =>
+            {
+                w.ClientsList.DataContext = dt.DefaultView;
+                w.OperationList.DataContext = dtl.DefaultView;
+            });
         }
         /// <summary>
         /// Создание новой ДБ
@@ -410,6 +430,22 @@ namespace Bank_13_
                 t.Start();
 
         }
-        
+        public void StartEdit(object r)
+        {
+            row = (DataRowView)r;
+            row.BeginEdit();
+        }
+        public void EndEdit()
+        {
+            if (row == null) return;
+            row.EndEdit();
+            da.Update(dt);
+        }
+        public void DeleteClient(object r)
+        {
+            row = (DataRowView)r;
+            row.Row.Delete();
+            da.Update(dt);
+        }
     }
 }

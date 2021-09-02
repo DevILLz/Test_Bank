@@ -27,7 +27,7 @@ namespace Bank_13_
         }
         private void Start()
         {
-            try { db = new(); }
+            try { db = new(this); }
             catch
             {
                 if (MessageBox.Show("Не удалось подключится к базе данных", "Error", MessageBoxButton.OK) == System.Windows.MessageBoxResult.OK)
@@ -35,12 +35,6 @@ namespace Bank_13_
                     Environment.Exit(0);
                 }
             }
-            this.Dispatcher.Invoke(() =>
-            {
-                MenuImmination.Header = "Включить иммитацию";
-                ClientsList.DataContext = db.dt.DefaultView;
-                OperationList.DataContext = db.dtl.DefaultView;
-            });
         }
 
         /// <summary>
@@ -55,19 +49,18 @@ namespace Bank_13_
             return false;
         }
 
-        #region Кнопочки    
         void ds(object sender, RoutedEventArgs e)
         {
             int c = -1;
             for (int i = 0; i < db.dt.Rows.Count; i++)
             {
-                if (Convert.ToString(db.dt.Rows[i][0]) == Tidrec.Text) { c = i; break; }
+                if (Convert.ToString((ClientsList.Items[i] as DataRowView).Row[0]) == Tidrec.Text) { c = i; break; }
             }
             try
             {
-                Tname.Text = db.dt.Rows[c].ItemArray[2].ToString();
-                Tadress.Text = db.dt.Rows[c].ItemArray[4].ToString();
-                Tpnumber.Text = db.dt.Rows[c].ItemArray[8].ToString();
+                Tname.Text = (ClientsList.Items[c] as DataRowView).Row[2].ToString();
+                Tadress.Text = (ClientsList.Items[c] as DataRowView).Row[4].ToString();
+                Tpnumber.Text = (ClientsList.Items[c] as DataRowView).Row[8].ToString();
             }
             catch
             {
@@ -75,7 +68,7 @@ namespace Bank_13_
                 Tadress.Text = "";
                 Tpnumber.Text = "";
             }
-        }// Информация о клиенте, которому будет выполнен перевод (По возможности переделать)
+        }// Информация о клиенте, которому будет выполнен перевод (По возможности ПЕРЕДЕЛАТЬ)
         private void OnPasting(object sender, DataObjectPastingEventArgs e)
         {
             var stringData = (string)e.DataObject.GetData(typeof(string));
@@ -89,6 +82,12 @@ namespace Bank_13_
             e.Handled = !e.Text.All(IsGood);
         }//защита ввода (цифры)
 
+        #region Кнопочки    
+        private void NewDB_button(object sender, RoutedEventArgs e)
+        {
+            lock (db) Task.Factory.StartNew(() => db.CreateBank(this));
+            
+        }//Создание новой БД
         private void Add_button(object sender, RoutedEventArgs e)
         {
             db.AddNewClient();
@@ -98,18 +97,6 @@ namespace Bank_13_
             popupInfo.IsOpen = true;
 
         }//кнопка контекстного меню ClientList
-        private void ClientInfo(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            popupInfo.IsOpen = true;
-            int SoR = (sender as FrameworkElement).Name == "OperationSender"
-                ? Convert.ToInt32((OperationList.SelectedItem as DataRowView).Row[3])
-                : Convert.ToInt32((OperationList.SelectedItem as DataRowView).Row[4]);
-            for (int i = 0; i <= SoR; i++)
-            {
-                int s = Convert.ToInt32((ClientsList.Items[i] as DataRowView).Row[0]);
-                if (s == SoR) { ClientsList.SelectedItem = ClientsList.Items[i]; break; }
-            }
-        }//При возможности ПЕРЕДЕЛАТЬ с RataRowView на что-нибудь
         private void ClientInfo2(object sender, System.Windows.Input.MouseEventArgs e)
         {
             popupInfo.IsOpen = false;
@@ -118,11 +105,6 @@ namespace Bank_13_
         {
             popupLogInfo.IsOpen = false;
         }
-        private void NewDB_button(object sender, RoutedEventArgs e)
-        {
-            lock (db) Task.Factory.StartNew(() => db.CreateBank(this));
-            
-        }//Создание новой БД
         private void ImmitationOn(object sender, RoutedEventArgs e)
         {
             if (!flag)
@@ -169,6 +151,35 @@ namespace Bank_13_
                     Convert.ToInt32(Tmoney.Text));
             }
         }//кнопка ОК внутри popup трансферов
+        private void CRepayment_button(object sender, RoutedEventArgs e)
+        {
+            db.Repayment(ClientsList.SelectedIndex);
+        }
+        private void BAUpdate_button(object sender, RoutedEventArgs e)
+        {
+            popupBAUpdate.IsOpen = true;
+        }
+        private void PUBAUpdate_button(object sender, RoutedEventArgs e)
+        {
+            if (BAUpdate.Text != null && BAUpdate.Text != "")
+            {
+                popupBAUpdate.IsOpen = false;
+                
+                db.UpdateBankAccount(ClientsList.SelectedIndex, Convert.ToInt32(BAUpdate.Text), InOrOutBDUpdate.IsChecked.Value);
+            }
+        }
+        private void ClientInfo(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            popupInfo.IsOpen = true;
+            int SoR = (sender as FrameworkElement).Name == "OperationSender"
+                ? Convert.ToInt32((OperationList.SelectedItem as DataRowView).Row[3])
+                : Convert.ToInt32((OperationList.SelectedItem as DataRowView).Row[4]);
+            for (int i = 0; i <= SoR; i++)
+            {
+                int s = Convert.ToInt32((ClientsList.Items[i] as DataRowView).Row[0]);
+                if (s == SoR) { ClientsList.SelectedItem = ClientsList.Items[i]; break; }
+            }
+        }//При возможности ПЕРЕДЕЛАТЬ с RataRowView на что-нибудь
         private void OperationListInfo_click(object sender, RoutedEventArgs e)
         {
             popupLogInfo.IsOpen = true;
@@ -193,28 +204,10 @@ namespace Bank_13_
                 }
             }
         }//При возможности ПЕРЕДЕЛАТЬ
-        private void CRepayment_button(object sender, RoutedEventArgs e)
-        {
-            db.Repayment(ClientsList.SelectedIndex);
-        }
-        private void BAUpdate_button(object sender, RoutedEventArgs e)
-        {
-            popupBAUpdate.IsOpen = true;
-        }
-        private void PUBAUpdate_button(object sender, RoutedEventArgs e)
-        {
-            if (BAUpdate.Text != null && BAUpdate.Text != "")
-            {
-                popupBAUpdate.IsOpen = false;
-                
-                db.UpdateBankAccount(ClientsList.SelectedIndex, Convert.ToInt32(BAUpdate.Text), InOrOutBDUpdate.IsChecked.Value);
-            }
-        }
         private void GVCellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
+            db.StartEdit((DataRowView)ClientsList.SelectedItem);
 
-            db.row = (DataRowView)ClientsList.SelectedItem;
-            db.row.BeginEdit();
         }
         /// <summary>
         /// Редактирование записи
@@ -223,9 +216,7 @@ namespace Bank_13_
         /// <param name="e"></param>
         private void GVCurrentCellChanged(object sender, EventArgs e)
         {
-            if (db.row == null) return;
-            db.row.EndEdit();
-            db.da.Update(db.dt);
+            db.EndEdit();
         }
         /// <summary>
         /// Удаление записи
@@ -234,9 +225,7 @@ namespace Bank_13_
         /// <param name="e"></param>
         private void MenuItemDeleteClick(object sender, RoutedEventArgs e)
         {
-            db.row = (DataRowView)ClientsList.SelectedItem;
-            db.row.Row.Delete();
-            db.da.Update(db.dt);
+            db.DeleteClient((DataRowView)ClientsList.SelectedItem);
         }
         #endregion
 
