@@ -285,7 +285,7 @@ namespace Bank_13_
                         if (cc == 2) break;
                     }
                 }
-                //da.Update(dt);
+                da.Update(dt);
                 DataRow r = dtl.NewRow();
                 r["Date"] = DateTime.Now;
                 r["MoneyAmount"] = money;
@@ -431,7 +431,7 @@ namespace Bank_13_
                 int c2 = r.Next(0, dt.Rows.Count - 1);
                 int tempM = r.Next(100, 1000);
                 Transfer(c1, c2, tempM);
-                //Task.Factory.StartNew(() => Transfer(c1, c2, tempM));
+                //Task.Factory.StartNew(() => Transfer(c1, c2, tempM)); NRE?
             }
             if (!ImitFlag)
                 Task.Factory.StartNew(() =>
